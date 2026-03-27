@@ -2,17 +2,18 @@
 // Admin view: all bookings with filter by status and inline status updates
 
 import React, { useEffect, useState } from 'react';
-import { BookOpen, RefreshCw, Filter } from 'lucide-react';
+import { BookOpen, RefreshCw, Filter, Loader2 } from 'lucide-react';
 import { toast } from 'react-toastify';
 import { getAllBookings, updateBookingStatus, type Booking } from '../firebase/firestoreService';
+import { DataLabel } from '../components/SharedBrutal';
 
 const STATUS_FILTERS = ['All', 'Pending', 'Paid', 'Cancelled'] as const;
 type StatusFilter = typeof STATUS_FILTERS[number];
 
 const statusStyle = {
-  Paid: 'bg-green-500/15 text-green-400',
-  Pending: 'bg-amber-500/15 text-amber-400',
-  Cancelled: 'bg-red-500/15 text-red-400',
+  Paid: 'bg-brand-red text-paper border-brand-red',
+  Pending: 'bg-brand-yellow text-void border-brand-yellow',
+  Cancelled: 'bg-void text-paper/50 border-paper/20',
 };
 
 const BookingsManager: React.FC = () => {
@@ -42,9 +43,9 @@ const BookingsManager: React.FC = () => {
       setBookings((prev) =>
         prev.map((b) => (b.id === id ? { ...b, status: newStatus } : b))
       );
-      toast.success(`Status updated to ${newStatus}`);
+      toast.success(`STATUS_UPDATED :: ${newStatus.toUpperCase()}`);
     } catch {
-      toast.error('Failed to update status.');
+      toast.error('FAILED TO UPDATE STATUS');
     } finally {
       setUpdatingId(null);
     }
@@ -60,33 +61,39 @@ const BookingsManager: React.FC = () => {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8 max-w-7xl">
       {/* Header */}
-      <div className="flex items-center justify-between flex-wrap gap-4">
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-6 border-b-2 border-paper/10">
         <div>
-          <h1 className="text-white font-bold text-2xl">Bookings</h1>
-          <p className="text-white/40 text-sm mt-1">{bookings.length} total booking{bookings.length !== 1 ? 's' : ''}</p>
+          <DataLabel className="text-brand-yellow mb-2">RESERVATION_RECORDS</DataLabel>
+          <h1 className="text-paper font-display text-5xl uppercase">BOOKINGS.</h1>
+          <p className="font-mono text-paper/50 text-sm mt-4 uppercase">
+            {bookings.length} TOTAL RECORD{bookings.length !== 1 ? 'S' : ''} DETECTED
+          </p>
         </div>
         <button
           onClick={load}
-          className="flex items-center gap-2 text-white/40 hover:text-white hover:bg-white/5 px-4 py-2 rounded-xl text-sm transition-all"
+          className="btn-brutal flex items-center gap-2 py-3 px-6 text-sm"
         >
           <RefreshCw className="w-4 h-4" />
-          Refresh
+          SYNC_DATA
         </button>
       </div>
 
       {/* Status filter tabs */}
-      <div className="flex items-center gap-1 flex-wrap">
-        <Filter className="w-4 h-4 text-white/30 mr-1" />
+      <div className="flex flex-wrap items-center gap-4 bg-paper/5 p-4 brutal-border">
+        <div className="flex items-center gap-2 mr-4 opacity-50 font-mono text-sm">
+          <Filter className="w-4 h-4" />
+          FILTER_BY_STATUS:
+        </div>
         {STATUS_FILTERS.map((s) => (
           <button
             key={s}
             onClick={() => setFilter(s)}
-            className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all ${
+            className={`px-4 py-2 font-mono text-xs uppercase tracking-widest transition-all ${
               filter === s
-                ? 'bg-amber-500 text-slate-950'
-                : 'bg-white/5 text-white/50 hover:bg-white/10 hover:text-white'
+                ? 'bg-brand-yellow text-void brutal-border translate-x-1 -translate-y-1 shadow-[4px_4px_0_0_#A31621]'
+                : 'text-paper/60 hover:text-brand-yellow border-2 border-transparent hover:border-brand-yellow'
             }`}
           >
             {s} ({counts[s]})
@@ -95,83 +102,89 @@ const BookingsManager: React.FC = () => {
       </div>
 
       {/* Table */}
-      <div className="bg-slate-900 rounded-2xl border border-white/5 overflow-hidden">
+      <div className="bg-paper/5 brutal-border brutal-shadow overflow-hidden">
         {loading ? (
-          <div className="space-y-1 p-4">
-            {Array.from({ length: 5 }).map((_, i) => (
-              <div key={i} className="h-16 bg-slate-800 rounded-xl animate-pulse" />
-            ))}
+          <div className="flex items-center justify-center p-20">
+            <Loader2 className="w-12 h-12 text-brand-yellow animate-spin" />
           </div>
         ) : filtered.length === 0 ? (
-          <div className="py-20 text-center">
-            <BookOpen className="w-12 h-12 text-white/10 mx-auto mb-3" />
-            <p className="text-white/30 text-sm">No bookings found{filter !== 'All' ? ` with status "${filter}"` : ''}.</p>
+          <div className="py-20 text-center border-b-2 border-paper/10">
+            <BookOpen className="w-16 h-16 text-brand-red mx-auto mb-6 opacity-50" />
+            <p className="text-paper/50 font-mono text-lg uppercase tracking-widest">
+              NO_RECORDS_FOUND{filter !== 'All' ? ` [${filter.toUpperCase()}]` : ''}
+            </p>
           </div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full text-sm">
+            <table className="w-full text-left border-collapse">
               <thead>
-                <tr className="border-b border-white/5">
-                  <th className="text-left text-white/40 font-medium px-6 py-3">Customer</th>
-                  <th className="text-left text-white/40 font-medium px-6 py-3 hidden md:table-cell">Package</th>
-                  <th className="text-left text-white/40 font-medium px-6 py-3 hidden sm:table-cell">Travel Date</th>
-                  <th className="text-left text-white/40 font-medium px-6 py-3 hidden lg:table-cell">Travelers</th>
-                  <th className="text-left text-white/40 font-medium px-6 py-3 hidden lg:table-cell">Amount</th>
-                  <th className="text-left text-white/40 font-medium px-6 py-3">Status</th>
-                  <th className="text-right text-white/40 font-medium px-6 py-3">Actions</th>
+                <tr className="border-b-2 border-paper/10 bg-void/50 font-mono text-xs uppercase tracking-widest text-paper/50">
+                  <th className="p-4 md:p-6 font-normal">CUSTOMER_DATA</th>
+                  <th className="p-4 md:p-6 font-normal hidden md:table-cell">PACKAGE_REF</th>
+                  <th className="p-4 md:p-6 font-normal hidden sm:table-cell">TIMEFRAME</th>
+                  <th className="p-4 md:p-6 font-normal hidden lg:table-cell">MANIFEST</th>
+                  <th className="p-4 md:p-6 font-normal hidden lg:table-cell">REVENUE</th>
+                  <th className="p-4 md:p-6 font-normal">STATUS</th>
+                  <th className="p-4 md:p-6 font-normal text-right">OPERATIONS</th>
                 </tr>
               </thead>
-              <tbody>
+              <tbody className="font-mono text-sm">
                 {filtered.map((b) => (
-                  <tr key={b.id} className="border-b border-white/5 last:border-0 hover:bg-white/2">
-                    <td className="px-6 py-4">
-                      <p className="text-white font-medium">{b.name}</p>
-                      <p className="text-white/40 text-xs">{b.phone}</p>
-                      <p className="text-white/30 text-xs">{b.email}</p>
+                  <tr key={b.id} className="border-b-2 border-paper/5 hover:bg-paper/5 transition-colors group">
+                    <td className="p-4 md:p-6">
+                      <p className="text-paper font-bold uppercase text-base">{b.name}</p>
+                      <p className="text-brand-yellow mt-1">{b.phone}</p>
+                      <p className="text-paper/40 text-xs mt-1 lowercase">{b.email}</p>
                     </td>
-                    <td className="px-6 py-4 hidden md:table-cell">
-                      <p className="text-white/70 text-xs max-w-[140px] line-clamp-2">
+                    <td className="p-4 md:p-6 hidden md:table-cell align-top">
+                      <p className="text-paper/70 text-xs max-w-[160px] uppercase truncate">
                         {b.packageTitle || b.packageId}
                       </p>
                     </td>
-                    <td className="px-6 py-4 hidden sm:table-cell text-white/50 text-xs">{b.travelDate}</td>
-                    <td className="px-6 py-4 hidden lg:table-cell text-white/50 text-xs">{b.travelers} pax</td>
-                    <td className="px-6 py-4 hidden lg:table-cell text-amber-400 font-semibold text-xs">
-                      ₹{b.totalAmount?.toLocaleString('en-IN') || '—'}
-                    </td>
-                    <td className="px-6 py-4">
-                      <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${statusStyle[b.status]}`}>
-                        {b.status}
+                    <td className="p-4 md:p-6 hidden sm:table-cell align-top">
+                      <span className="bg-void px-2 py-1 border-2 border-paper/10 text-brand-yellow">
+                        {b.travelDate}
                       </span>
                     </td>
-                    <td className="px-6 py-4">
-                      <div className="flex items-center justify-end gap-1.5">
+                    <td className="p-4 md:p-6 hidden lg:table-cell align-top text-paper/70">
+                      {b.travelers} PAX
+                    </td>
+                    <td className="p-4 md:p-6 hidden lg:table-cell align-top text-brand-red font-bold">
+                      ₹{b.totalAmount?.toLocaleString('en-IN') || '—'}
+                    </td>
+                    <td className="p-4 md:p-6 align-top">
+                      <span className={`inline-block px-3 py-1 text-xs font-bold uppercase brutal-border ${statusStyle[b.status]}`}>
+                        [{b.status}]
+                      </span>
+                    </td>
+                    <td className="p-4 md:p-6 align-top text-right">
+                      <div className="flex items-center justify-end gap-2 flex-wrap">
                         {updatingId === b.id ? (
-                          <span className="h-4 w-4 animate-spin rounded-full border-2 border-amber-500 border-t-transparent" />
+                          <span className="h-5 w-5 animate-spin rounded-full border-2 border-brand-yellow border-t-transparent" />
                         ) : (
                           <>
                             {b.status !== 'Paid' && (
                               <button
                                 onClick={() => handleStatusUpdate(b.id!, 'Paid')}
-                                className="px-2.5 py-1 rounded-lg bg-green-500/10 text-green-400 hover:bg-green-500/20 text-xs font-medium transition-colors"
+                                className="px-3 py-2 bg-void text-brand-red border-2 border-brand-red hover:bg-brand-red hover:text-paper text-xs uppercase transition-colors"
                               >
-                                Mark Paid
+                                MARK_PAID
                               </button>
                             )}
                             {b.status !== 'Pending' && b.status !== 'Cancelled' && (
                               <button
                                 onClick={() => handleStatusUpdate(b.id!, 'Pending')}
-                                className="px-2.5 py-1 rounded-lg bg-amber-500/10 text-amber-400 hover:bg-amber-500/20 text-xs font-medium transition-colors"
+                                className="px-3 py-2 bg-void text-brand-yellow border-2 border-brand-yellow hover:bg-brand-yellow hover:text-void text-xs uppercase transition-colors"
                               >
-                                Pending
+                                SET_PENDING
                               </button>
                             )}
                             {b.status !== 'Cancelled' && (
                               <button
                                 onClick={() => handleStatusUpdate(b.id!, 'Cancelled')}
-                                className="px-2.5 py-1 rounded-lg bg-red-500/10 text-red-400 hover:bg-red-500/20 text-xs font-medium transition-colors"
+                                className="px-3 py-2 bg-void text-paper/50 border-2 border-paper/20 hover:border-paper hover:text-paper text-xs uppercase transition-colors"
                               >
-                                Cancel
+                                CANCEL
                               </button>
                             )}
                           </>

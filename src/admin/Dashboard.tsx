@@ -5,24 +5,25 @@ import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Package, BookOpen, DollarSign, Clock, TrendingUp, ArrowRight } from 'lucide-react';
 import { getPackages, getAllBookings, type Booking } from '../firebase/firestoreService';
+import { DataLabel } from '../components/SharedBrutal';
 
 interface StatCardProps {
   icon: React.ReactNode;
   label: string;
   value: string | number;
   sub?: string;
-  color: string;
+  colorClass: string;
 }
 
-const StatCard: React.FC<StatCardProps> = ({ icon, label, value, sub, color }) => (
-  <div className="bg-slate-900 rounded-2xl border border-white/5 p-6 flex items-start gap-4">
-    <div className={`w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 ${color}`}>
+const StatCard: React.FC<StatCardProps> = ({ icon, label, value, sub, colorClass }) => (
+  <div className="bg-paper/5 brutal-border p-6 flex flex-col md:flex-row items-start gap-6 hover:bg-paper/10 transition-colors">
+    <div className={`w-14 h-14 brutal-border flex items-center justify-center flex-shrink-0 ${colorClass}`}>
       {icon}
     </div>
     <div>
-      <p className="text-white/50 text-sm">{label}</p>
-      <p className="text-white font-bold text-2xl mt-0.5">{value}</p>
-      {sub && <p className="text-white/30 text-xs mt-1">{sub}</p>}
+      <DataLabel>{label}</DataLabel>
+      <p className="text-paper font-display text-4xl mt-2">{value}</p>
+      {sub && <p className="text-paper/50 font-mono text-xs mt-2 uppercase">{sub}</p>}
     </div>
   </div>
 );
@@ -54,98 +55,99 @@ const Dashboard: React.FC = () => {
   const recentBookings = bookings.slice(0, 5);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-10">
       {/* Header */}
       <div>
-        <h1 className="text-white font-bold text-2xl">Dashboard</h1>
-        <p className="text-white/40 text-sm mt-1">Welcome back — here's what's happening today.</p>
+        <DataLabel className="text-brand-yellow mb-2">DASHBOARD_OVERVIEW</DataLabel>
+        <h1 className="text-paper font-display text-5xl uppercase">COMMAND_CENTER.</h1>
+        <p className="font-mono text-paper/50 text-sm mt-4 uppercase">Welcome back — ALL SYSTEMS NOMINAL.</p>
       </div>
 
       {/* Stats grid */}
       {loading ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6">
           {Array.from({ length: 4 }).map((_, i) => (
-            <div key={i} className="bg-slate-900 rounded-2xl border border-white/5 p-6 h-24 animate-pulse" />
+            <div key={i} className="bg-paper/5 brutal-border p-6 h-32 animate-pulse" />
           ))}
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6">
           <StatCard
-            icon={<Package className="w-6 h-6 text-blue-400" />}
-            label="Total Packages"
+            icon={<Package className="w-6 h-6 text-void" />}
+            label="TOTAL_PACKAGES"
             value={packageCount}
             sub="Active listings"
-            color="bg-blue-500/10"
+            colorClass="bg-brand-yellow"
           />
           <StatCard
-            icon={<BookOpen className="w-6 h-6 text-amber-400" />}
-            label="Total Bookings"
+            icon={<BookOpen className="w-6 h-6 text-paper" />}
+            label="TOTAL_BOOKINGS"
             value={bookings.length}
             sub={`${paidBookings.length} paid`}
-            color="bg-amber-500/10"
+            colorClass="bg-brand-red"
           />
           <StatCard
-            icon={<DollarSign className="w-6 h-6 text-green-400" />}
-            label="Total Revenue"
+            icon={<DollarSign className="w-6 h-6 text-brand-yellow" />}
+            label="TOTAL_REVENUE"
             value={`₹${totalRevenue.toLocaleString('en-IN')}`}
-            sub="From paid bookings"
-            color="bg-green-500/10"
+            sub="From confirmed bookings"
+            colorClass="bg-void text-brand-yellow border-brand-yellow"
           />
           <StatCard
-            icon={<Clock className="w-6 h-6 text-orange-400" />}
-            label="Pending Bookings"
+            icon={<Clock className="w-6 h-6 text-void" />}
+            label="PENDING_BOOKINGS"
             value={pendingBookings.length}
             sub="Awaiting payment"
-            color="bg-orange-500/10"
+            colorClass="bg-paper"
           />
         </div>
       )}
 
       {/* Recent bookings table */}
-      <div className="bg-slate-900 rounded-2xl border border-white/5 overflow-hidden">
-        <div className="flex items-center justify-between px-6 py-4 border-b border-white/5">
-          <div className="flex items-center gap-2">
-            <TrendingUp className="w-4 h-4 text-amber-400" />
-            <h2 className="text-white font-semibold">Recent Bookings</h2>
+      <div className="bg-void brutal-border brutal-shadow">
+        <div className="flex items-center justify-between px-6 py-6 border-b-2 border-paper/10">
+          <div className="flex items-center gap-4">
+            <TrendingUp className="w-6 h-6 text-brand-red" />
+            <h2 className="text-paper font-display text-2xl uppercase">RECENT_BOOKINGS</h2>
           </div>
-          <Link to="/admin/bookings" className="text-amber-400 text-sm hover:underline flex items-center gap-1">
-            View all <ArrowRight className="w-3 h-3" />
+          <Link to="/admin/bookings" className="text-brand-yellow font-mono text-sm uppercase hover:text-brand-red flex items-center gap-2 transition-colors">
+            VIEW_ALL <ArrowRight className="w-4 h-4" />
           </Link>
         </div>
 
         {recentBookings.length === 0 ? (
-          <div className="py-12 text-center text-white/30 text-sm">No bookings yet.</div>
+          <div className="py-16 text-center text-paper/30 font-mono text-sm uppercase">NO_BOOKINGS_DETECTED.</div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b border-white/5">
-                  <th className="text-left text-white/40 font-medium px-6 py-3">Customer</th>
-                  <th className="text-left text-white/40 font-medium px-6 py-3 hidden md:table-cell">Package</th>
-                  <th className="text-left text-white/40 font-medium px-6 py-3 hidden lg:table-cell">Amount</th>
-                  <th className="text-left text-white/40 font-medium px-6 py-3">Status</th>
+            <table className="w-full text-left font-mono text-sm">
+              <thead className="bg-paper/5">
+                <tr className="border-b-2 border-paper/10">
+                  <th className="text-brand-yellow font-normal px-6 py-4 uppercase tracking-widest text-xs">Customer</th>
+                  <th className="text-brand-yellow font-normal px-6 py-4 uppercase tracking-widest text-xs hidden md:table-cell">Package</th>
+                  <th className="text-brand-yellow font-normal px-6 py-4 uppercase tracking-widest text-xs hidden lg:table-cell">Amount</th>
+                  <th className="text-brand-yellow font-normal px-6 py-4 uppercase tracking-widest text-xs">Status</th>
                 </tr>
               </thead>
               <tbody>
                 {recentBookings.map((b) => (
-                  <tr key={b.id} className="border-b border-white/5 last:border-0 hover:bg-white/2">
-                    <td className="px-6 py-3">
-                      <p className="text-white font-medium">{b.name}</p>
-                      <p className="text-white/40 text-xs">{b.email}</p>
+                  <tr key={b.id} className="border-b border-paper/5 last:border-0 hover:bg-paper/5 transition-colors">
+                    <td className="px-6 py-4">
+                      <p className="text-paper font-bold uppercase">{b.name}</p>
+                      <p className="text-paper/40 text-xs mt-1">{b.email}</p>
                     </td>
-                    <td className="px-6 py-3 hidden md:table-cell">
-                      <p className="text-white/70 truncate max-w-[160px]">{b.packageTitle || b.packageId}</p>
+                    <td className="px-6 py-4 hidden md:table-cell">
+                      <p className="text-paper/70 truncate max-w-[200px] uppercase">{b.packageTitle || b.packageId}</p>
                     </td>
-                    <td className="px-6 py-3 hidden lg:table-cell text-white/60">
+                    <td className="px-6 py-4 hidden lg:table-cell text-paper/60">
                       ₹{b.totalAmount?.toLocaleString('en-IN') || '—'}
                     </td>
-                    <td className="px-6 py-3">
-                      <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${
+                    <td className="px-6 py-4">
+                      <span className={`px-3 py-1 text-[10px] uppercase font-bold tracking-wider ${
                         b.status === 'Paid'
-                          ? 'bg-green-500/15 text-green-400'
+                          ? 'bg-brand-yellow text-void brutal-border'
                           : b.status === 'Cancelled'
-                          ? 'bg-red-500/15 text-red-400'
-                          : 'bg-amber-500/15 text-amber-400'
+                          ? 'bg-brand-red text-void brutal-border'
+                          : 'bg-paper text-void brutal-border'
                       }`}>
                         {b.status}
                       </span>

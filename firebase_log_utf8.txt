@@ -1,0 +1,61 @@
+﻿
+[1m[37m===[39m Deploying to 'no-fixed-address-8482'...[22m
+
+[36m[1mi [22m[39m deploying [1mdatabase, storage, firestore, hosting, auth[22m
+[36m[1mi [22m[39m [1m[36mdatabase: [39m[22mchecking rules syntax...
+node.exe : 
+(node:9056) 
+[DEP0169] 
+DeprecationWarning: 
+`url.parse()` 
+behavior is not 
+standardized and 
+prone to errors that 
+have security 
+implications. Use 
+the WHATWG URL API 
+instead. CVEs are 
+not issued for 
+`url.parse()` 
+vulnerabilities.
+At line:1 char:1
++ & "C:\Program Files
+\nodejs/node.exe" "C:
+\Users\heman\AppData\
+Roaming\ ...
++ ~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~
+    + CategoryInfo   
+           : NotSpe  
+  cified: ((node:9   
+ 056) [DE...ulner    
+abilities.:Strin    
+g) [], RemoteExc    
+eption
+    + FullyQualified 
+   ErrorId : Native  
+  CommandError
+ 
+(Use `node 
+--trace-deprecation 
+...` to show where 
+the warning was 
+created)
+[32m[1m+ [22m[39m [1m[32mdatabase: [39m[22mrules syntax for database [1mno-fixed-address-8482-default-rtdb[22m is valid
+[36m[1mi  storage:[22m[39m ensuring required API [1mfirebasestorage.googleapis.com[22m is enabled...
+[36m[1mi  firebase.storage:[22m[39m checking [1mstorage.rules[22m for compilation errors...
+[32m[1m+  firebase.storage:[22m[39m rules file [1mstorage.rules[22m compiled successfully
+[36m[1mi  firestore:[22m[39m ensuring required API [1mfirestore.googleapis.com[22m is enabled...
+[36m[1mi  firestore:[22m[39m ensuring required API [1mfirestore.googleapis.com[22m is enabled...
+[36m[1mi [22m[39m [1m[36mfirestore:[39m[22m reading indexes from [1mfirestore.indexes.json[22m...
+[36m[1mi  cloud.firestore:[22m[39m checking [1mfirestore.rules[22m for compilation errors...
+
+[1m[31mError:[39m[22m Compilation errors in [1mfirestore.rules[22m:
+[E] 5:11 - Missing 'match' keyword before path.
+[E] 5:20 - Forward slash '/' found where identifier or binding expected.
+[E] 5:22 - Unexpected 'package'.
+[E] 5:22 - Unexpected 'package'.
+[E] 5:31 - Unexpected '{'.
+[E] 24:1 - Unexpected '}'.

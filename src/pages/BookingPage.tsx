@@ -6,8 +6,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { toast } from 'react-toastify';
 import { User, Phone, Mail, Users, Calendar, CreditCard, AlertCircle } from 'lucide-react';
-import Navbar from '../components/Navbar';
-import Footer from '../components/Footer';
+import { BrutalNavbar, BrutalFooter, DataLabel } from '../components/SharedBrutal';
 import LoadingSpinner from '../components/LoadingSpinner';
 import { getPackageById, createBooking, updateBookingStatus, type Package } from '../firebase/firestoreService';
 
@@ -162,46 +161,50 @@ const BookingPage: React.FC = () => {
   if (loading) return <LoadingSpinner />;
 
   return (
-    <div className="min-h-screen bg-slate-950">
-      <Navbar />
+    <div className="min-h-screen bg-void text-paper selection:bg-brand-yellow selection:text-void">
+      <BrutalNavbar />
 
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-20">
-        <div className="text-center mb-10">
-          <h1 className="font-serif text-4xl font-bold text-white mb-2">Book Your Trip</h1>
-          <p className="text-white/50">{pkg?.title}</p>
+      <div className="max-w-7xl mx-auto px-6 md:px-20 pt-32 pb-32">
+        <div className="text-center mb-16">
+          <DataLabel className="text-brand-yellow mb-6">SECURE_BOOKING_CHANNEL</DataLabel>
+          <h1 className="text-6xl md:text-8xl font-display leading-none text-paper mb-4 uppercase">BOOK_YOUR<br/>TRIP.</h1>
+          <p className="text-xl font-mono leading-relaxed opacity-70">
+            {pkg?.title}
+          </p>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
           {/* ── Form ─────────────────────────────────── */}
-          <div className="lg:col-span-2">
-            <form onSubmit={handleSubmit(onSubmit)} className="space-y-5" noValidate>
-              <div className="bg-slate-900 rounded-2xl border border-white/10 p-6 space-y-5">
-                <h2 className="text-white font-semibold text-lg">Traveller Details</h2>
+          <div className="lg:col-span-8">
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-8" noValidate>
+              <div className="bg-paper/5 brutal-border brutal-shadow p-8 md:p-10 space-y-8">
+                <div className="border-b-2 border-paper/10 pb-4">
+                  <DataLabel className="text-brand-red">TRAVELLER_DETAILS</DataLabel>
+                </div>
 
                 {/* Name */}
-                <div>
-                  <label className="block text-white/60 text-sm mb-1.5">Full Name *</label>
+                <div className="flex flex-col gap-2">
+                  <DataLabel>FULL_NAME *</DataLabel>
                   <div className="relative">
-                    <User className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30" />
+                    <User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-brand-yellow" />
                     <input
                       {...register('name', { required: 'Name is required', minLength: { value: 2, message: 'Name too short' } })}
-                      placeholder="John Doe"
-                      className={`w-full bg-slate-800 border text-white placeholder-white/20 rounded-xl pl-10 pr-4 py-3 text-sm focus:outline-none transition-colors ${errors.name ? 'border-red-500/50' : 'border-white/10 focus:border-amber-500/50'
-                        }`}
+                      placeholder="JOHN DOE"
+                      className={`w-full bg-void text-paper font-mono p-4 pl-12 text-lg brutal-border focus:border-brand-yellow outline-none transition-colors ${errors.name ? 'border-brand-red' : ''}`}
                     />
                   </div>
                   {errors.name && (
-                    <p className="flex items-center gap-1 text-red-400 text-xs mt-1">
-                      <AlertCircle className="w-3 h-3" /> {errors.name.message}
+                    <p className="flex items-center gap-2 font-mono text-brand-red text-xs uppercase mt-2">
+                      <AlertCircle className="w-4 h-4" /> {errors.name.message}
                     </p>
                   )}
                 </div>
 
                 {/* Phone */}
-                <div>
-                  <label className="block text-white/60 text-sm mb-1.5">Phone Number *</label>
+                <div className="flex flex-col gap-2">
+                  <DataLabel>PHONE_NUMBER *</DataLabel>
                   <div className="relative">
-                    <Phone className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30" />
+                    <Phone className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-brand-yellow" />
                     <input
                       {...register('phone', {
                         required: 'Phone is required',
@@ -209,46 +212,44 @@ const BookingPage: React.FC = () => {
                       })}
                       placeholder="9876543210"
                       type="tel"
-                      className={`w-full bg-slate-800 border text-white placeholder-white/20 rounded-xl pl-10 pr-4 py-3 text-sm focus:outline-none transition-colors ${errors.phone ? 'border-red-500/50' : 'border-white/10 focus:border-amber-500/50'
-                        }`}
+                      className={`w-full bg-void text-paper font-mono p-4 pl-12 text-lg brutal-border focus:border-brand-yellow outline-none transition-colors ${errors.phone ? 'border-brand-red' : ''}`}
                     />
                   </div>
                   {errors.phone && (
-                    <p className="flex items-center gap-1 text-red-400 text-xs mt-1">
-                      <AlertCircle className="w-3 h-3" /> {errors.phone.message}
+                    <p className="flex items-center gap-2 font-mono text-brand-red text-xs uppercase mt-2">
+                      <AlertCircle className="w-4 h-4" /> {errors.phone.message}
                     </p>
                   )}
                 </div>
 
                 {/* Email */}
-                <div>
-                  <label className="block text-white/60 text-sm mb-1.5">Email Address *</label>
+                <div className="flex flex-col gap-2">
+                  <DataLabel>EMAIL_ADDRESS *</DataLabel>
                   <div className="relative">
-                    <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30" />
+                    <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-brand-yellow" />
                     <input
                       {...register('email', {
                         required: 'Email is required',
                         pattern: { value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/, message: 'Enter a valid email' },
                       })}
-                      placeholder="john@email.com"
+                      placeholder="JOHN@EMAIL.COM"
                       type="email"
-                      className={`w-full bg-slate-800 border text-white placeholder-white/20 rounded-xl pl-10 pr-4 py-3 text-sm focus:outline-none transition-colors ${errors.email ? 'border-red-500/50' : 'border-white/10 focus:border-amber-500/50'
-                        }`}
+                      className={`w-full bg-void text-paper font-mono p-4 pl-12 text-lg brutal-border focus:border-brand-yellow outline-none transition-colors ${errors.email ? 'border-brand-red' : ''}`}
                     />
                   </div>
                   {errors.email && (
-                    <p className="flex items-center gap-1 text-red-400 text-xs mt-1">
-                      <AlertCircle className="w-3 h-3" /> {errors.email.message}
+                    <p className="flex items-center gap-2 font-mono text-brand-red text-xs uppercase mt-2">
+                      <AlertCircle className="w-4 h-4" /> {errors.email.message}
                     </p>
                   )}
                 </div>
 
                 {/* Travelers + Date row */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-white/60 text-sm mb-1.5">Number of Travelers *</label>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
+                  <div className="flex flex-col gap-2">
+                    <DataLabel>NUMBER_OF_TRAVELERS *</DataLabel>
                     <div className="relative">
-                      <Users className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30" />
+                      <Users className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-brand-yellow" />
                       <input
                         {...register('travelers', {
                           required: 'Required',
@@ -258,32 +259,30 @@ const BookingPage: React.FC = () => {
                         type="number"
                         min={1}
                         max={20}
-                        className={`w-full bg-slate-800 border text-white rounded-xl pl-10 pr-4 py-3 text-sm focus:outline-none transition-colors ${errors.travelers ? 'border-red-500/50' : 'border-white/10 focus:border-amber-500/50'
-                          }`}
+                        className={`w-full bg-void text-paper font-mono p-4 pl-12 text-lg brutal-border focus:border-brand-yellow outline-none transition-colors ${errors.travelers ? 'border-brand-red' : ''}`}
                       />
                     </div>
                     {errors.travelers && (
-                      <p className="flex items-center gap-1 text-red-400 text-xs mt-1">
-                        <AlertCircle className="w-3 h-3" /> {errors.travelers.message}
+                      <p className="flex items-center gap-2 font-mono text-brand-red text-xs uppercase mt-2">
+                        <AlertCircle className="w-4 h-4" /> {errors.travelers.message}
                       </p>
                     )}
                   </div>
 
-                  <div>
-                    <label className="block text-white/60 text-sm mb-1.5">Travel Date *</label>
+                  <div className="flex flex-col gap-2">
+                    <DataLabel>TRAVEL_DATE *</DataLabel>
                     <div className="relative">
-                      <Calendar className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30" />
+                      <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-brand-yellow" />
                       <input
                         {...register('travelDate', { required: 'Date is required' })}
                         type="date"
                         min={minDate}
-                        className={`w-full bg-slate-800 border text-white rounded-xl pl-10 pr-4 py-3 text-sm focus:outline-none transition-colors cursor-pointer ${errors.travelDate ? 'border-red-500/50' : 'border-white/10 focus:border-amber-500/50'
-                          }`}
+                        className={`w-full bg-void text-paper font-mono p-4 pl-12 text-lg brutal-border focus:border-brand-yellow outline-none transition-colors cursor-pointer ${errors.travelDate ? 'border-brand-red' : ''}`}
                       />
                     </div>
                     {errors.travelDate && (
-                      <p className="flex items-center gap-1 text-red-400 text-xs mt-1">
-                        <AlertCircle className="w-3 h-3" /> {errors.travelDate.message}
+                      <p className="flex items-center gap-2 font-mono text-brand-red text-xs uppercase mt-2">
+                        <AlertCircle className="w-4 h-4" /> {errors.travelDate.message}
                       </p>
                     )}
                   </div>
@@ -294,17 +293,17 @@ const BookingPage: React.FC = () => {
               <button
                 type="submit"
                 disabled={processing}
-                className="w-full flex items-center justify-center gap-2 bg-amber-500 hover:bg-amber-400 disabled:opacity-60 disabled:cursor-not-allowed text-slate-950 font-bold py-4 rounded-xl transition-all duration-200 hover:shadow-lg hover:shadow-amber-500/25 text-base"
+                className="btn-brutal-red w-full flex items-center justify-center gap-4 text-xl py-6"
               >
                 {processing ? (
-                  <span className="flex items-center gap-2">
-                    <span className="h-4 w-4 animate-spin rounded-full border-2 border-slate-950 border-t-transparent" />
-                    Processing...
+                  <span className="flex items-center gap-4 uppercase font-mono">
+                    <span className="h-5 w-5 animate-spin rounded-full border-2 border-void border-t-transparent" />
+                    PROCESSING...
                   </span>
                 ) : (
                   <>
-                    <CreditCard className="w-5 h-5" />
-                    Proceed to Pay ₹{totalAmount.toLocaleString('en-IN')}
+                    <CreditCard className="w-6 h-6" />
+                    PROCEED_TO_PAY // ₹{totalAmount.toLocaleString('en-IN')}
                   </>
                 )}
               </button>
@@ -312,45 +311,51 @@ const BookingPage: React.FC = () => {
           </div>
 
           {/* ── Order Summary ─────────────────────────── */}
-          <div>
-            <div className="bg-slate-900 rounded-2xl border border-white/10 p-6 sticky top-24">
-              <h2 className="text-white font-semibold text-lg mb-5">Order Summary</h2>
+          <div className="lg:col-span-4">
+            <div className="bg-void brutal-border brutal-shadow p-8 sticky top-32">
+              <div className="border-b-2 border-paper/10 pb-4 mb-6">
+                <DataLabel className="text-brand-yellow">ORDER_SUMMARY</DataLabel>
+              </div>
 
               {pkg?.images?.[0] && (
-                <img
-                  src={pkg.images[0]}
-                  alt={pkg.title}
-                  className="w-full h-36 object-cover rounded-xl mb-4"
-                />
+                <div className="aspect-video overflow-hidden brutal-border mb-6">
+                  <img
+                    src={pkg.images[0]}
+                    alt={pkg.title}
+                    className="w-full h-full object-cover grayscale hover:grayscale-0 transition-all duration-700"
+                  />
+                </div>
               )}
 
-              <h3 className="text-white font-medium mb-4">{pkg?.title}</h3>
+              <h3 className="text-3xl font-display mb-6 text-paper uppercase leading-none">{pkg?.title}</h3>
 
-              <div className="space-y-3 text-sm">
-                <div className="flex justify-between text-white/50">
-                  <span>Price per person</span>
+              <div className="space-y-4 font-mono text-sm uppercase">
+                <div className="flex justify-between border-b border-paper/10 pb-2 text-paper/70">
+                  <span>Price_Per_Person</span>
                   <span>₹{pkg?.price.toLocaleString('en-IN')}</span>
                 </div>
-                <div className="flex justify-between text-white/50">
-                  <span>Travelers</span>
+                <div className="flex justify-between border-b border-paper/10 pb-2 text-paper/70">
+                  <span>Travelers_Count</span>
                   <span>× {travelers}</span>
                 </div>
-                <hr className="border-white/10" />
-                <div className="flex justify-between text-white font-bold text-lg">
-                  <span>Total</span>
-                  <span className="text-amber-400">₹{totalAmount.toLocaleString('en-IN')}</span>
+                <div className="flex justify-between pt-4 text-paper text-lg font-bold">
+                  <span>TOTAL_AMOUNT</span>
+                  <span className="text-brand-yellow">₹{totalAmount.toLocaleString('en-IN')}</span>
                 </div>
               </div>
 
-              <p className="text-white/30 text-xs mt-4 leading-relaxed">
-                🔒 Secure payment via Razorpay. Your details are encrypted and safe.
-              </p>
+              <div className="mt-8 bg-paper/5 p-4 brutal-border">
+                <DataLabel>SECURITY_NOTICE</DataLabel>
+                <p className="font-mono text-xs opacity-60 leading-relaxed uppercase mt-2">
+                  Encrypted transmission via Razorpay gateway. All coordinate data secured.
+                </p>
+              </div>
             </div>
           </div>
         </div>
       </div>
 
-      <Footer />
+      <BrutalFooter />
     </div>
   );
 };
