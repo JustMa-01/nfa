@@ -1,38 +1,14 @@
-import React, { useState, useEffect, useRef } from "react";
-import { motion, AnimatePresence, useScroll, useTransform } from "motion/react";
-import { Link, useNavigate } from "react-router-dom";
-import { 
-  Zap, 
-  Activity, 
-  Target, 
-  Globe, 
-  Menu, 
-  X, 
-  ArrowRight, 
-  Loader2, 
-  Radio, 
-  Terminal,
-  Share2,
-  MapPin
-} from "lucide-react";
-import { cn } from "../utils";
+import React, { useState, useEffect } from "react";
+import { motion, AnimatePresence } from "motion/react";
+import { Link } from "react-router-dom";
+import { Quote, Loader2, Zap, Globe } from "lucide-react";
 import { getPackages, type Package } from "../firebase/firestoreService";
-import { BRAND_NAME, BRAND_TAGLINE } from "../constants";
 import { getTransformationPath, TransformationPath } from "../services/geminiService";
-import { DataLabel, Logo, BrutalNavbar, BrutalFooter } from "../components/SharedBrutal";
+import { StampedLabel, BrutalNavbar, BrutalFooter } from "../components/SharedBrutal";
 import PackageCard from "../components/PackageCard";
 import { SkeletonGrid } from "../components/SkeletonCard";
 
-const Marquee = () => (
-  <div className="marquee-container">
-    <div className="marquee-content">
-      {Array(10).fill(`${BRAND_NAME} // ${BRAND_TAGLINE} // `).join("")}
-    </div>
-  </div>
-);
-
 export default function HomePage() {
-  const navigate = useNavigate();
   const [packages, setPackages] = useState<Package[]>([]);
   const [vibeInput, setVibeInput] = useState("");
   const [isScanning, setIsScanning] = useState(false);
@@ -40,17 +16,10 @@ export default function HomePage() {
   const [loadingPackages, setLoadingPackages] = useState(true);
 
   useEffect(() => {
-    const fetchHomeData = async () => {
-      try {
-        const data = await getPackages();
-        setPackages(data);
-      } catch (err) {
-        console.error("Failed to fetch packages", err);
-      } finally {
-        setLoadingPackages(false);
-      }
-    };
-    fetchHomeData();
+    getPackages().then(data => {
+      setPackages(data);
+      setLoadingPackages(false);
+    });
   }, []);
 
   const handleScan = async () => {
@@ -59,150 +28,143 @@ export default function HomePage() {
     try {
       const result = await getTransformationPath(vibeInput, packages);
       setScanResult(result);
-    } catch (error) {
-      console.error(error);
-    } finally {
-      setIsScanning(false);
-    }
+    } catch (error) { console.error(error); } 
+    finally { setIsScanning(false); }
   };
 
   return (
-    <div className="min-h-screen bg-void text-paper selection:bg-brand-yellow selection:text-void">
+    <div className="min-h-screen bg-void text-paper selection:bg-brand-yellow selection:text-void grain-texture">
       <BrutalNavbar />
 
       <main>
-        {/* Hero Section */}
-        <section className="split-pane">
-          <div className="flex flex-col justify-center p-6 md:p-20 pt-40 lg:pt-20">
-            <DataLabel className="text-brand-yellow mb-6">Curated Travel</DataLabel>
-            <h1 className="text-7xl md:text-[12rem] leading-[0.85] mb-10">
-              NO<br />FIXED<br /><span className="text-brand-yellow">ADDRESS.</span>
+        {/* HERO SECTION */}
+        <section className="min-h-screen flex flex-col justify-center items-center px-6 pt-32 pb-20 relative overflow-hidden">
+          <div className="max-w-6xl w-full text-center z-10">
+            <StampedLabel className="mb-8">ESTABLISHED IN THE UNKNOWN</StampedLabel>
+            <h1 className="text-7xl md:text-[11rem] font-display font-black leading-[0.8] mb-12 tracking-tighter">
+              THE WORLD IS<br />
+              <span className="text-brand-yellow">NOT A MAP.</span>
             </h1>
-            <p className="text-xl md:text-2xl font-mono max-w-xl opacity-70 leading-relaxed mb-12">
-              We curate extraordinary destinations for the curious soul. From misty mountain trails to sun-drenched beaches — your journey begins here.
-            </p>
-            <div className="flex flex-wrap gap-6">
-              <button onClick={() => document.getElementById('grid')?.scrollIntoView({ behavior: 'smooth' })} className="btn-brutal">
-                Explore Destinations
+            <div className="flex flex-col md:flex-row items-center justify-center gap-12 mt-12">
+              <div className="max-w-md text-left border-l-4 border-brand-red pl-8">
+                <p className="text-xl font-display italic opacity-80 leading-tight">
+                  "We are the ones who refused the cubicle. The ones who found home in the movement. No Fixed Address is a statement of intent."
+                </p>
+              </div>
+              <button onClick={() => document.getElementById('expeditions')?.scrollIntoView({ behavior: 'smooth' })} className="px-12 py-6 bg-brand-red text-paper font-mono font-black text-sm tracking-widest hover:bg-brand-yellow hover:text-void transition-all shadow-[8px_8px_0px_0px_#F2B233]">
+                INITIATE_BREAKOUT
               </button>
-              <Link to="/packages" className="btn-brutal-red">
-                Find Your Journey
-              </Link>
             </div>
           </div>
-          <div className="relative overflow-hidden hidden lg:block">
-            <img 
-              src="https://images.unsplash.com/photo-1514565131-fce0801e5785?auto=format&fit=crop&q=80&w=1200" 
-              alt="Cyberpunk City" 
-              className="w-full h-full object-cover"
-              referrerPolicy="no-referrer"
-            />
-            <div className="absolute inset-0 bg-brand-red/20 mix-blend-overlay" />
-            <div className="absolute bottom-20 left-20 bg-void p-10 brutal-border brutal-shadow">
-              <Terminal className="text-brand-yellow mb-4" size={40} />
-              <h3 className="text-3xl mb-2">System Status</h3>
-              <p className="font-mono text-sm opacity-60">All Routes Open // Ready for departure</p>
-            </div>
+          <div className="absolute bottom-10 left-10 hidden lg:block font-mono text-[10px] opacity-40">
+            COORDINATES // 00.0000° N, 00.0000° E
           </div>
         </section>
 
-        <Marquee />
-
-        {/* Grid Section */}
-        <section id="grid" className="py-32 px-6 md:px-20">
-          <div className="flex flex-col md:flex-row justify-between items-end mb-20 gap-10">
-            <div className="max-w-2xl">
-              <DataLabel className="text-brand-yellow">Featured Packages</DataLabel>
-              <h2 className="text-6xl md:text-9xl leading-none">DESTINATIONS.</h2>
-            </div>
-            <div className="max-w-xs text-right hidden md:block">
-              <p className="font-mono text-sm opacity-50">Select your next adventure. Unforgettable experiences guaranteed.</p>
-            </div>
-          </div>
-
-          {loadingPackages ? (
-            <SkeletonGrid count={4} />
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-              {packages.slice(0, 4).map((pkg) => (
-                <PackageCard key={pkg.id} pkg={pkg} />
-              ))}
-            </div>
-          )}
-        </section>
-
-        {/* Oracle Section */}
-        <section className="py-32 px-6 md:px-20 bg-paper text-void">
-          <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-20 items-center">
-            <div>
-              <DataLabel className="text-brand-red">Travel Assistant</DataLabel>
-              <h2 className="text-6xl md:text-8xl leading-none mb-10">Find Your<br />Escape.</h2>
-              <p className="text-xl font-mono opacity-70 mb-12">
-                Input your travel preferences. Our oracle will calculate your optimal getaway.
-              </p>
-              <div className="flex flex-col gap-4">
-                <div className="relative">
-                  <Terminal className="absolute left-6 top-1/2 -translate-y-1/2 text-brand-red" size={24} />
-                  <input 
-                    type="text" 
-                    value={vibeInput}
-                    onChange={(e) => setVibeInput(e.target.value)}
-                    placeholder="I SEEK A RELAXING BEACH ESCAPE..."
-                    className="w-full bg-void text-paper p-6 pl-16 font-mono text-lg brutal-border focus:border-brand-red outline-none"
-                  />
-                </div>
-                <button 
-                  onClick={handleScan}
-                  disabled={isScanning}
-                  className="btn-brutal-red w-full flex items-center justify-center gap-4"
-                >
-                  {isScanning ? <Loader2 className="animate-spin" /> : <Zap size={24} />}
-                  Find Destinations
-                </button>
+        {/* PHILOSOPHY SECTION */}
+        <section className="py-32 px-6 bg-paper text-void">
+          <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-20 items-center">
+            <div className="relative">
+              <div className="thick-border p-4 bg-void rotate-2 shadow-2xl">
+                <img src="https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=1200" alt="Philosophy" className="w-full grayscale" />
+              </div>
+              <div className="absolute -bottom-10 -right-10 w-40 h-40 bg-brand-red  items-center justify-center border-4 border-void -rotate-3 hidden md:flex">
+                <Quote size={50} className="text-paper" />
               </div>
             </div>
-
-            <AnimatePresence>
-              {scanResult && (
-                <motion.div 
-                  initial={{ opacity: 0, x: 50 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  className="bg-void text-paper p-10 brutal-border brutal-shadow"
-                >
-                  <div className="flex justify-between items-start mb-10">
-                    <div>
-                      <DataLabel className="text-brand-yellow">Destination Match</DataLabel>
-                      <h3 className="text-4xl">{packages.find(p => p.id === scanResult.packageId)?.title}</h3>
-                    </div>
-                    <div className="text-right">
-                      <DataLabel>Intensity Match</DataLabel>
-                      <span className="text-2xl font-display text-brand-red">{scanResult.intensity}</span>
-                    </div>
-                  </div>
-                  <div className="space-y-8">
-                    <div>
-                      <DataLabel>Recommendation Reasoning</DataLabel>
-                      <p className="font-mono text-lg leading-relaxed opacity-80">{scanResult.reasoning}</p>
-                    </div>
-                    <div className="bg-paper/5 p-6 brutal-border">
-                      <DataLabel>Log Entry</DataLabel>
-                      <p className="font-mono text-sm leading-relaxed opacity-60 italic">"{scanResult.pulseLog}"</p>
-                    </div>
-                    <Link to={`/packages/${scanResult.packageId}`} className="btn-brutal inline-block w-full text-center">
-                      View Package
-                    </Link>
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
+            <div className="flex flex-col gap-8">
+              <StampedLabel className="border-void/20 text-void/60">OUR PHILOSOPHY</StampedLabel>
+              <h2 className="text-6xl md:text-8xl font-display font-black leading-none">
+                MODERN<br />NOMADIC<br /><span className="text-brand-red">HERITAGE.</span>
+              </h2>
+              <p className="text-xl font-serif leading-relaxed opacity-80">
+                We don't travel to escape life, but for life not to escape us. Our expeditions are built on the pillars of resilience, community, and the raw pursuit of the unmapped.
+              </p>
+              <div className="grid grid-cols-2 gap-8 mt-8 border-t-4 border-void pt-8">
+                <div><h4 className="text-2xl font-black">RADICAL TRUTH</h4><p className="text-sm opacity-60">No filters. No staged moments.</p></div>
+                <div><h4 className="text-2xl font-black">DEEP ROOTS</h4><p className="text-sm opacity-60">Connecting with the land.</p></div>
+              </div>
+            </div>
           </div>
         </section>
 
-        <BrutalFooter />
+        {/* EXPEDITIONS SECTION */}
+        <section id="expeditions" className="py-32 px-6">
+          <div className="max-w-7xl mx-auto">
+            <div className="flex flex-col md:flex-row justify-between items-end mb-20 gap-8">
+              <div>
+                <StampedLabel className="mb-4">ACTIVE EXPEDITIONS</StampedLabel>
+                <h2 className="text-6xl md:text-9xl font-display font-black leading-none uppercase">
+                  SELECT YOUR<br /><span className="text-brand-yellow">FRONTIER.</span>
+                </h2>
+              </div>
+              <p className="text-xs font-mono opacity-40 uppercase max-w-200px text-right hidden md:block">
+                Limited slots available for the 2026 season. Group-led by veteran nomads.
+              </p>
+            </div>
+
+            {loadingPackages ? <SkeletonGrid count={4} /> : (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+                {packages.slice(0, 4).map((pkg) => <PackageCard key={pkg.id} pkg={pkg} />)}
+              </div>
+            )}
+          </div>
+        </section>
+
+        {/* ORACLE V2 SECTION */}
+        <section className="py-32 px-6 flex flex-col items-center">
+          <div className="max-w-4xl w-full thick-border p-12 bg-paper text-void relative">
+            <div className="absolute -top-6 -left-6 bg-brand-red text-paper px-4 py-2 font-mono font-black text-xs">ORACLE_V.2.0</div>
+            <div className="text-center mb-12">
+              <h2 className="text-5xl font-display font-black mb-4">FIND YOUR FREQUENCY.</h2>
+              <p className="text-xs font-mono opacity-60 uppercase">Input your current state. We calculate the extraction point.</p>
+            </div>
+            <div className="flex flex-col md:flex-row gap-4 mb-8">
+              <input 
+                type="text" value={vibeInput} onChange={(e) => setVibeInput(e.target.value)}
+                placeholder="I AM SEEKING ABSOLUTE SILENCE..."
+                className="flex-1 bg-void text-paper p-6 font-mono font-bold text-sm border-4 border-brand-yellow focus:outline-none placeholder:opacity-30"
+              />
+              <button onClick={handleScan} disabled={isScanning} className="px-10 bg-brand-red text-paper font-mono font-black text-sm hover:bg-brand-yellow hover:text-void transition-all disabled:opacity-50 flex items-center justify-center gap-2">
+                {isScanning ? <Loader2 className="animate-spin" /> : <Zap size={20} />} CALCULATE
+              </button>
+            </div>
+            {scanResult && (
+              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="mt-12 border-t-4 border-void pt-12">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
+                  <div>
+                    <StampedLabel className="mb-4">MATCH DETECTED</StampedLabel>
+                    <h3 className="text-4xl font-display font-black mb-4 uppercase">{packages.find(p => p.id === scanResult.packageId)?.title}</h3>
+                    <p className="text-lg italic font-bold leading-tight">"{scanResult.reasoning}"</p>
+                  </div>
+                  <div className="bg-void text-paper p-8 border-4 border-brand-yellow font-mono text-xs uppercase opacity-70">
+                    <div className="mb-4 text-brand-yellow font-black">PULSE_LOG: {scanResult.intensity}</div>
+                    "{scanResult.pulseLog}"
+                  </div>
+                </div>
+              </motion.div>
+            )}
+          </div>
+        </section>
+
+        {/* FINAL CALL SECTION */}
+        <section className="py-40 px-6 bg-brand-red text-paper text-center relative overflow-hidden">
+          <div className="absolute inset-0 opacity-10 pointer-events-none">
+            <Globe size={800} className="absolute -top-40 -left-40" />
+          </div>
+          <div className="max-w-5xl mx-auto relative z-10">
+            <StampedLabel className="mb-8 border-paper/40">FINAL CALL</StampedLabel>
+            <h2 className="text-7xl md:text-[10rem] font-display font-black leading-[0.8] mb-12 tracking-tighter">
+              STOP<br />WAITING.<br /><span className="text-brand-yellow">START MOVING.</span>
+            </h2>
+            <Link to="/packages" className="inline-block px-16 py-8 bg-brand-yellow text-void font-mono font-black text-xl tracking-widest hover:bg-paper hover:text-brand-red transition-all shadow-[12px_12px_0px_0px_white]">
+              APPLY_FOR_2026
+            </Link>
+          </div>
+        </section>
       </main>
 
-      {/* Layout Bottom */}
+      <BrutalFooter />
     </div>
   );
 }
-

@@ -1,49 +1,54 @@
-// PackageCard — reusable card component for travel packages
-
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Clock, MapPin, ArrowRight } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
+import { motion } from 'motion/react';
 import type { Package } from '../firebase/firestoreService';
 
-interface Props {
-  pkg: Package;
-}
+interface Props { pkg: Package; }
 
 const PackageCard: React.FC<Props> = ({ pkg }) => {
-  const heroImage = pkg.images?.[0] || 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800&auto=format&fit=crop&q=80';
-
   return (
-    <div className="kinetic-card group cursor-pointer h-full flex flex-col">
-      <Link to={`/packages/${pkg.id}`} className="block h-full flex flex-col">
-        <div className="aspect-[4/5] overflow-hidden relative">
-          <img
-            src={heroImage}
-            alt={pkg.title}
-            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
-            loading="lazy"
-          />
-          <div className="absolute inset-0 bg-void/40 group-hover:bg-void/10 transition-colors" />
-          
-          <div className="absolute top-4 left-4 bg-brand-red text-paper px-3 py-1 font-mono text-[10px] uppercase">
-            ₹{pkg.price.toLocaleString('en-IN')}
-          </div>
-          
-          <div className="absolute bottom-6 left-6 right-6">
-            <span className="font-mono text-[10px] uppercase tracking-widest opacity-50 block mb-1 text-brand-yellow">
+    <motion.div 
+      initial={{ opacity: 0, y: 20 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true }}
+      className="relative overflow-hidden border-4 border-brand-yellow bg-void group h-550px transition-transform duration-500 hover:-translate-y-2"
+    >
+      <Link to={`/packages/${pkg.id}`} className="block h-full">
+        <img 
+          src={pkg.images?.[0] || 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4'} 
+          alt={pkg.title}
+          className="w-full h-full object-cover opacity-70 group-hover:opacity-100 transition-all duration-700 grayscale group-hover:grayscale-0"
+        />
+        
+        <div className="absolute inset-0 bg-linear-to-t from-void via-void/20 to-transparent p-8 flex flex-col justify-end">
+          <div className="border-l-4 border-brand-yellow pl-4 mb-6">
+            <span className="text-[10px] font-mono font-bold text-brand-yellow tracking-widest block mb-2">
               {pkg.category || 'DESTINATION'}
             </span>
-            <h3 className="text-4xl font-display leading-none text-paper line-clamp-2">{pkg.title}</h3>
+            <h3 className="text-4xl font-display font-black text-paper leading-none uppercase">
+              {pkg.title}
+            </h3>
+          </div>
+          
+          <div className="flex justify-between items-end">
+            <p className="text-[10px] font-mono opacity-60 max-w-180px uppercase tracking-tighter">
+              {pkg.duration || 'EXPEDITION_READY'}
+            </p>
+            <div className="text-right">
+              <span className="text-[10px] font-mono opacity-40 block uppercase">STARTING AT</span>
+              <span className="text-2xl font-display font-black text-brand-yellow">₹{pkg.price.toLocaleString('en-IN')}</span>
+            </div>
           </div>
         </div>
-        
-        <div className="p-6 bg-void flex justify-between items-center flex-1 border-t-2 border-paper/10">
-          <span className="font-mono text-sm opacity-50">
-            {pkg.duration ? pkg.duration : `${pkg.itinerary?.length || 1} DAYS`}
-          </span>
-          <ArrowRight className="text-brand-yellow group-hover:translate-x-2 transition-transform" />
+
+        <div className="absolute top-0 right-0 p-4">
+          <div className="w-12 h-12 bg-brand-red flex items-center justify-center border-2 border-brand-yellow">
+            <ArrowRight className="text-paper group-hover:translate-x-1 transition-transform" />
+          </div>
         </div>
       </Link>
-    </div>
+    </motion.div>
   );
 };
 

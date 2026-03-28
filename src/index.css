@@ -1,23 +1,15 @@
-@import url('https://fonts.googleapis.com/css2?family=Anton&family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700;1,900&family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap');
 @import "tailwindcss";
 
 @theme {
   --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
-  --font-display: "Anton", sans-serif;
-  --font-heading: "Space Grotesk", sans-serif;
-  --font-mono: "JetBrains Mono", monospace;
+  --font-display: "Playfair Display", serif;
+  --font-mono: "Space Grotesk", sans-serif;
   
-  --color-brand-yellow: #F2B233;
-  --color-brand-red: #C23A2B;
-  --color-void: #0A0A0A;
-  --color-paper: #F5F5F5;
-
-  --animate-marquee: marquee 20s linear infinite;
-
-  @keyframes marquee {
-    0% { transform: translateX(0); }
-    100% { transform: translateX(-50%); }
-  }
+  --color-brand-yellow: #F2B233; /* Gold */
+  --color-brand-red: #C23A2B;    /* Red */
+  --color-void: #111111;         /* Charcoal */
+  --color-paper: #F8F1E5;        /* Cream */
 }
 
 @layer base {
@@ -26,135 +18,35 @@
     font-family: var(--font-sans);
   }
   
-  h1, h2, h3 {
+  h1, h2, h3, h4, h5, h6 {
     font-family: var(--font-display);
     @apply uppercase tracking-tighter;
   }
 }
 
-/* Nomad Manifesto Styles */
-.brutal-border {
-  border: 2px solid #F5F5F5;
-}
+/* Luxury Editorial Utils */
+.brutal-border { @apply border-4 border-brand-yellow; }
+.thick-border { @apply border-8 border-brand-yellow; }
 
-.brutal-shadow {
-  box-shadow: 8px 8px 0px 0px #F2B233;
-}
-
-.brutal-shadow-red {
-  box-shadow: 8px 8px 0px 0px #C23A2B;
-}
-
-.marquee-container {
-  overflow: hidden;
-  white-space: nowrap;
-  background-color: #F2B233;
-  color: #0A0A0A;
-  padding-top: 0.5rem;
-  padding-bottom: 0.5rem;
-  border-top: 2px solid #0A0A0A;
-  border-bottom: 2px solid #0A0A0A;
-}
-
-.marquee-content {
-  display: inline-block;
-  font-family: var(--font-display);
-  font-size: 1.5rem;
-  text-transform: uppercase;
-}
-
-.split-pane {
-  display: grid;
-  grid-template-columns: 1fr;
-  min-height: 100vh;
-}
-
-@media (min-width: 1024px) {
-  .split-pane {
-    grid-template-columns: 1fr 1fr;
-  }
-}
-
-.kinetic-card {
+.grain-texture {
   position: relative;
-  overflow: hidden;
-  border: 2px solid #F5F5F5;
-  transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.kinetic-card:hover {
-  transform: translateY(-0.5rem);
-  box-shadow: 8px 8px 0px 0px #F2B233;
+.grain-texture::before {
+  content: "";
+  position: absolute;
+  top: 0; left: 0; width: 100%; height: 100%;
+  background-image: url("https://www.transparenttextures.com/patterns/stardust.png");
+  opacity: 0.08;
+  pointer-events: none;
+  z-index: 10;
 }
 
-.data-label {
-  font-family: var(--font-mono);
-  font-size: 10px;
-  text-transform: uppercase;
-  letter-spacing: 0.2em;
-  opacity: 0.5;
+.stamped-text {
+  @apply font-mono uppercase tracking-[0.3em] text-[10px] font-bold px-2 py-1 border border-brand-yellow/30 inline-block;
 }
 
-.btn-brutal {
-  padding-left: 2rem;
-  padding-right: 2rem;
-  padding-top: 1rem;
-  padding-bottom: 1rem;
-  background-color: #F2B233;
-  color: #0A0A0A;
-  font-family: var(--font-display);
-  font-size: 1.25rem;
-  text-transform: uppercase;
-  border: 2px solid #F5F5F5;
-  transition: all 0.2s ease;
-  cursor: pointer;
-}
-
-.btn-brutal:hover {
-  box-shadow: 8px 8px 0px 0px #F2B233;
-}
-
-.btn-brutal:active {
-  transform: translate(4px, 4px);
-  box-shadow: none;
-}
-
-.btn-brutal-red {
-  padding-left: 2rem;
-  padding-right: 2rem;
-  padding-top: 1rem;
-  padding-bottom: 1rem;
-  background-color: #C23A2B;
-  color: #F5F5F5;
-  font-family: var(--font-display);
-  font-size: 1.25rem;
-  text-transform: uppercase;
-  border: 2px solid #F5F5F5;
-  transition: all 0.2s ease;
-  cursor: pointer;
-}
-
-.btn-brutal-red:hover {
-  box-shadow: 8px 8px 0px 0px #C23A2B;
-}
-
-.btn-brutal-red:active {
-  transform: translate(4px, 4px);
-  box-shadow: none;
-}
-
-/* -- Scrollbar & Toast Overrides ------------------------- */
-::-webkit-scrollbar { width: 6px; }
+/* Custom Scrollbar for Editorial feel */
+::-webkit-scrollbar { width: 8px; }
 ::-webkit-scrollbar-track { background: var(--color-void); }
-::-webkit-scrollbar-thumb { background: var(--color-brand-yellow); border-radius: 3px; }
-
-.Toastify__toast {
-  background: var(--color-void) !important;
-  border: 2px solid var(--color-paper) !important;
-  box-shadow: 4px 4px 0px 0px var(--color-brand-yellow) !important;
-  color: var(--color-paper) !important;
-  font-family: var(--font-mono) !important;
-  border-radius: 0 !important;
-}
-.Toastify__progress-bar--success { background: var(--color-brand-yellow) !important; }
-.Toastify__toast-icon svg { fill: var(--color-brand-yellow) !important; }
+::-webkit-scrollbar-thumb { background: var(--color-brand-yellow); }

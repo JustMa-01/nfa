@@ -1,148 +1,98 @@
-// ─── Admin Login Page ─────────────────────────────────────────────────────────
-// Firebase email/password authentication for admin access
-
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { toast } from 'react-toastify';
-import { Mail, Lock, AlertCircle } from 'lucide-react';
-import { DataLabel } from '../components/SharedBrutal';
+import { Mail, Lock, ShieldCheck, Navigation, Loader2 } from 'lucide-react';
+import { StampedLabel } from '../components/SharedBrutal';
 import { signIn } from '../firebase/authService';
-
-interface LoginFormData {
-  email: string;
-  password: string;
-}
 
 const AdminLogin: React.FC = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
-  const { register, handleSubmit, formState: { errors } } = useForm<LoginFormData>();
+  const { register, handleSubmit, formState: { errors } } = useForm();
 
-  const onSubmit = async (data: LoginFormData) => {
+  const onSubmit = async (data: any) => {
     setLoading(true);
     try {
       await signIn(data.email, data.password);
-      toast.success('Welcome back!');
+      toast.success('ACCESS_GRANTED');
       navigate('/admin/dashboard');
-    } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : 'Invalid credentials';
-      toast.error(msg.includes('wrong-password') || msg.includes('user-not-found')
-        ? 'Invalid email or password'
-        : 'Login failed. Check your credentials.');
+    } catch (err: any) {
+      toast.error('INVALID_CREDENTIALS');
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-void text-paper selection:bg-brand-yellow selection:text-void flex items-center justify-center px-6">
+    <div className="min-h-screen bg-paper text-void selection:bg-brand-yellow flex items-center justify-center px-6 grain-texture">
       <div className="w-full max-w-md">
-        {/* Logo */}
-        <div className="text-center mb-10">
-          <DataLabel className="text-brand-red mb-4">ADMIN ACCESS</DataLabel>
-          <h1 className="text-6xl font-display leading-none mb-4 text-paper">RESTRICTED<br/>AREA</h1>
-          <p className="font-mono text-sm uppercase opacity-50 tracking-widest text-brand-yellow"><span className="text-brand-red">▲</span> AUTHORIZED PERSONNEL ONLY</p>
+        {/* HQ Stamp */}
+        <div className="text-center mb-12">
+          <div className="w-20 h-20 bg-void text-brand-yellow flex items-center justify-center mx-auto mb-6 border-4 border-brand-yellow rotate-3 shadow-xl">
+            <Navigation size={40} className="fill-brand-yellow" />
+          </div>
+          <StampedLabel className="border-void/20 text-void/60 mb-2">SYSTEM_OPERATOR_ACCESS</StampedLabel>
+          <h1 className="text-5xl font-display font-black tracking-tighter uppercase">NFA_HQ.</h1>
         </div>
 
-        <div className="bg-paper/5 p-8 md:p-10 brutal-border brutal-shadow">
-          <h2 className="font-mono text-xl uppercase tracking-widest mb-8 text-brand-yellow border-b-2 border-brand-yellow/30 pb-4">AUTHENTICATE</h2>
+        <div className="thick-border bg-paper p-8 md:p-10 shadow-[16px_16px_0px_0px_rgba(17,17,17,1)] relative overflow-hidden">
+          {/* Decorative Corner Label */}
+          <div className="absolute top-0 right-0 bg-brand-red text-paper px-3 py-1 font-mono text-[8px] font-black uppercase">
+            RESTRICTED_NODE
+          </div>
 
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-6" noValidate>
-            {/* Email */}
-            <div>
-              <label className="block font-mono text-xs uppercase opacity-70 mb-2 mt-4 text-paper">EMAIL ADDRESS</label>
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
+            <div className="space-y-2">
+              <label className="font-mono text-[10px] font-black opacity-40 uppercase tracking-widest">OPERATOR_ID (EMAIL)</label>
               <div className="relative">
-                <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-brand-yellow" />
+                <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-brand-yellow" />
                 <input
-                  {...register('email', {
-                    required: 'Email is required',
-                    pattern: { value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/, message: 'Invalid email' },
-                  })}
+                  {...register('email', { required: true })}
                   type="email"
-                  placeholder="ADMIN@NOFIXEDADDRESS.IN"
-                  className={`w-full bg-void text-paper p-4 pl-12 font-mono text-lg brutal-border outline-none transition-colors focus:border-brand-yellow placeholder:opacity-50 ${
-                    errors.email ? 'border-brand-red' : ''
-                  }`}
+                  placeholder="ADMIN@NETWORK.COM"
+                  className="w-full bg-paper border-4 border-void p-4 pl-12 font-mono text-xs outline-none focus:ring-4 ring-brand-yellow/20 uppercase"
                 />
               </div>
-              {errors.email && (
-                <p className="flex items-center gap-1 text-brand-red font-mono text-[10px] mt-2 uppercase">
-                  <AlertCircle className="w-3 h-3" /> {errors.email.message}
-                </p>
-              )}
             </div>
 
-            {/* Password */}
-            <div>
-              <label className="block font-mono text-xs uppercase opacity-70 mb-2 mt-4 text-paper">PASSWORD</label>
+            <div className="space-y-2">
+              <label className="font-mono text-[10px] font-black opacity-40 uppercase tracking-widest">ACCESS_KEY (PASSWORD)</label>
               <div className="relative">
-                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-brand-yellow" />
+                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-brand-yellow" />
                 <input
-                  {...register('password', { required: 'Password is required', minLength: { value: 6, message: 'Min 6 characters' } })}
+                  {...register('password', { required: true })}
                   type="password"
                   placeholder="••••••••"
-                  className={`w-full bg-void text-paper p-4 pl-12 font-mono text-lg brutal-border outline-none transition-colors focus:border-brand-yellow placeholder:opacity-50 ${
-                    errors.password ? 'border-brand-red' : ''
-                  }`}
+                  className="w-full bg-paper border-4 border-void p-4 pl-12 font-mono text-xs outline-none focus:ring-4 ring-brand-yellow/20"
                 />
               </div>
-              {errors.password && (
-                <p className="flex items-center gap-1 text-brand-red font-mono text-[10px] mt-2 uppercase">
-                  <AlertCircle className="w-3 h-3" /> {errors.password.message}
-                </p>
-              )}
             </div>
 
             <button
               type="submit"
               disabled={loading}
-              className="btn-brutal w-full py-5 text-xl mt-6 disabled:opacity-50 disabled:cursor-not-allowed uppercase"
+              className="w-full py-6 bg-void text-paper font-mono font-black text-xs tracking-widest hover:bg-brand-yellow hover:text-void transition-all flex items-center justify-center gap-4"
             >
-              {loading ? (
-                <span className="flex items-center gap-2">
-                  <LoaderSpinner />
-                  PROCESSING...
-                </span>
-              ) : 'LOG IN'}
-            </button>
-
-            {/* Quick Demo Creation Button */}
-            <button
-              type="button"
-              onClick={async () => {
-                setLoading(true);
-                try {
-                  const { signUp } = await import('../firebase/authService');
-                  await signUp('admin@demo.com', 'password123');
-                  toast.success('Demo admin created! You can now sign in.');
-                } catch (err: any) {
-                  if (err.message.includes('email-already-in-use')) {
-                    toast.info('DEMO ADMIN // PROCEED TO LOGIN');
-                  } else {
-                    toast.error(err.message);
-                  }
-                } finally {
-                  setLoading(false);
-                }
-              }}
-              className="w-full flex items-center justify-center gap-2 bg-void hover:bg-paper/10 brutal-border text-paper font-mono uppercase tracking-widest text-xs py-4 transition-all duration-200 mt-6"
-            >
-              CREATE DEMO ADMIN
+              {loading ? <Loader2 className="animate-spin" /> : 'AUTHORIZE_SESSION ➔'}
             </button>
           </form>
+
+          <div className="mt-10 pt-6 border-t-2 border-void/5 flex items-start gap-3">
+            <ShieldCheck className="text-brand-red shrink-0" size={16} />
+            <p className="font-mono text-[8px] opacity-40 uppercase leading-relaxed">
+              By initiating authorization, you confirm compliance with nomadic heritage protocols and internal data security standards.
+            </p>
+          </div>
         </div>
+
+        {/* Quick Demo Help (Optional - Remove for Prod) */}
+        <p className="text-center mt-8 font-mono text-[10px] opacity-30 uppercase tracking-widest">
+          NODE: LOCALHOST // STATUS: UNSECURE
+        </p>
       </div>
     </div>
   );
 };
-
-// Extracted a small inline loader
-const LoaderSpinner = () => (
-  <svg className="animate-spin h-5 w-5 mr-3 text-current" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647Z"></path>
-  </svg>
-);
 
 export default AdminLogin;

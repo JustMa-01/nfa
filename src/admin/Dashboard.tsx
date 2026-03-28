@@ -1,166 +1,81 @@
-// ─── Admin Dashboard ─────────────────────────────────────────────────────────
-// Overview stats: total packages, bookings, revenue, pending actions
-
 import React, { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
-import { Package, BookOpen, DollarSign, Clock, TrendingUp, ArrowRight } from 'lucide-react';
+import { Package, BookOpen, DollarSign, TrendingUp, Users } from 'lucide-react';
 import { getPackages, getAllBookings, type Booking } from '../firebase/firestoreService';
-import { DataLabel } from '../components/SharedBrutal';
-
-interface StatCardProps {
-  icon: React.ReactNode;
-  label: string;
-  value: string | number;
-  sub?: string;
-  colorClass: string;
-}
-
-const StatCard: React.FC<StatCardProps> = ({ icon, label, value, sub, colorClass }) => (
-  <div className="bg-paper/5 brutal-border p-6 flex flex-col md:flex-row items-start gap-6 hover:bg-paper/10 transition-colors">
-    <div className={`w-14 h-14 brutal-border flex items-center justify-center flex-shrink-0 ${colorClass}`}>
-      {icon}
-    </div>
-    <div>
-      <DataLabel>{label}</DataLabel>
-      <p className="text-paper font-display text-4xl mt-2">{value}</p>
-      {sub && <p className="text-paper/50 font-mono text-xs mt-2 uppercase">{sub}</p>}
-    </div>
-  </div>
-);
+import { StampedLabel } from '../components/SharedBrutal';
 
 const Dashboard: React.FC = () => {
-  const [packageCount, setPackageCount] = useState(0);
-  const [bookings, setBookings] = useState<Booking[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [stats, setStats] = useState({ pkgCount: 0, bkgCount: 0, revenue: 0, travelers: 0 });
+  const [recent, setRecent] = useState<Booking[]>([]);
 
   useEffect(() => {
-    const load = async () => {
-      try {
-        const [pkgs, bkgs] = await Promise.all([getPackages(), getAllBookings()]);
-        setPackageCount(pkgs.length);
-        setBookings(bkgs);
-      } catch (err) {
-        console.error('Dashboard load error:', err);
-      } finally {
-        setLoading(false);
-      }
-    };
-    load();
+    Promise.all([getPackages(), getAllBookings()]).then(([pkgs, bkgs]) => {
+      const revenue = bkgs.filter(b => b.status === 'Paid').reduce((sum, b) => sum + (b.totalAmount || 0), 0);
+      const travelers = bkgs.reduce((sum, b) => sum + (b.travelers || 0), 0);
+      setStats({ pkgCount: pkgs.length, bkgCount: bkgs.length, revenue, travelers });
+      setRecent(bkgs.slice(0, 5));
+    });
   }, []);
 
-  const paidBookings = bookings.filter((b) => b.status === 'Paid');
-  const pendingBookings = bookings.filter((b) => b.status === 'Pending');
-  const totalRevenue = paidBookings.reduce((sum, b) => sum + (b.totalAmount || 0), 0);
-
-  const recentBookings = bookings.slice(0, 5);
+  const Card = ({ label, value, icon: Icon, color }: any) => (
+    <div className="thick-border bg-paper p-8 flex flex-col gap-4 shadow-[8px_8px_0px_0px_rgba(17,17,17,1)]">
+      <div className={`w-12 h-12 ${color} flex items-center justify-center border-2 border-void`}>
+        <Icon className="text-paper" size={20} />
+      </div>
+      <div>
+        <span className="font-mono text-[10px] font-black opacity-40 block mb-1 uppercase tracking-widest">{label}</span>
+        <p className="text-4xl font-display font-black leading-none uppercase">{value}</p>
+      </div>
+    </div>
+  );
 
   return (
-    <div className="space-y-10">
-      {/* Header */}
-      <div>
-        <DataLabel className="text-brand-yellow mb-2">DASHBOARD OVERVIEW</DataLabel>
-        <h1 className="text-paper font-display text-5xl uppercase">DASHBOARD.</h1>
-        <p className="font-mono text-paper/50 text-sm mt-4 uppercase">Welcome back — Ready for new bookings.</p>
+    <div className="max-w-7xl mx-auto space-y-12">
+      <div className="border-b-4 border-void pb-8">
+        <StampedLabel className="mb-4">EXPEDITION_COMMAND_CENTER</StampedLabel>
+        <h1 className="text-6xl md:text-8xl font-display font-black leading-none uppercase">HQ_REPORT.</h1>
       </div>
 
-      {/* Stats grid */}
-      {loading ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6">
-          {Array.from({ length: 4 }).map((_, i) => (
-            <div key={i} className="bg-paper/5 brutal-border p-6 h-32 animate-pulse" />
-          ))}
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6">
-          <StatCard
-            icon={<Package className="w-6 h-6 text-void" />}
-            label="TOTAL PACKAGES"
-            value={packageCount}
-            sub="Active listings"
-            colorClass="bg-brand-yellow"
-          />
-          <StatCard
-            icon={<BookOpen className="w-6 h-6 text-paper" />}
-            label="TOTAL BOOKINGS"
-            value={bookings.length}
-            sub={`${paidBookings.length} paid`}
-            colorClass="bg-brand-red"
-          />
-          <StatCard
-            icon={<DollarSign className="w-6 h-6 text-brand-yellow" />}
-            label="TOTAL REVENUE"
-            value={`₹${totalRevenue.toLocaleString('en-IN')}`}
-            sub="From confirmed bookings"
-            colorClass="bg-void text-brand-yellow border-brand-yellow"
-          />
-          <StatCard
-            icon={<Clock className="w-6 h-6 text-void" />}
-            label="PENDING BOOKINGS"
-            value={pendingBookings.length}
-            sub="Awaiting payment"
-            colorClass="bg-paper"
-          />
-        </div>
-      )}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+        <Card label="Active_Expeditions" value={stats.pkgCount} icon={Package} color="bg-brand-yellow" />
+        <Card label="Total_Reservations" value={stats.bkgCount} icon={BookOpen} color="bg-brand-red" />
+        <Card label="Total_Nomads" value={stats.travelers} icon={Users} color="bg-void" />
+        <Card label="Net_Revenue" value={`₹${stats.revenue.toLocaleString()}`} icon={DollarSign} color="bg-brand-yellow" />
+      </div>
 
-      {/* Recent bookings table */}
-      <div className="bg-void brutal-border brutal-shadow">
-        <div className="flex items-center justify-between px-6 py-6 border-b-2 border-paper/10">
-          <div className="flex items-center gap-4">
-            <TrendingUp className="w-6 h-6 text-brand-red" />
-            <h2 className="text-paper font-display text-2xl uppercase">RECENT BOOKINGS</h2>
-          </div>
-          <Link to="/admin/bookings" className="text-brand-yellow font-mono text-sm uppercase hover:text-brand-red flex items-center gap-2 transition-colors">
-            VIEW ALL <ArrowRight className="w-4 h-4" />
-          </Link>
+      <div className="thick-border bg-void text-paper p-8">
+        <div className="flex justify-between items-center mb-10 border-b border-paper/10 pb-6">
+          <h2 className="text-3xl font-display font-black uppercase flex items-center gap-4">
+            <TrendingUp className="text-brand-yellow" /> RECENT_ACTIVITY
+          </h2>
         </div>
-
-        {recentBookings.length === 0 ? (
-          <div className="py-16 text-center text-paper/30 font-mono text-sm uppercase">NO BOOKINGS FOUND.</div>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-left font-mono text-sm">
-              <thead className="bg-paper/5">
-                <tr className="border-b-2 border-paper/10">
-                  <th className="text-brand-yellow font-normal px-6 py-4 uppercase tracking-widest text-xs">Customer</th>
-                  <th className="text-brand-yellow font-normal px-6 py-4 uppercase tracking-widest text-xs hidden md:table-cell">Package</th>
-                  <th className="text-brand-yellow font-normal px-6 py-4 uppercase tracking-widest text-xs hidden lg:table-cell">Amount</th>
-                  <th className="text-brand-yellow font-normal px-6 py-4 uppercase tracking-widest text-xs">Status</th>
+        
+        <div className="overflow-x-auto">
+          <table className="w-full text-left font-mono text-[10px] font-black uppercase tracking-widest">
+            <thead>
+              <tr className="border-b border-paper/20 opacity-40">
+                <th className="pb-4">NOMAD_IDENTIFIER</th>
+                <th className="pb-4">EXPEDITION_REF</th>
+                <th className="pb-4">STATUS</th>
+                <th className="pb-4 text-right">CREDITS</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-paper/5">
+              {recent.map((b) => (
+                <tr key={b.id} className="hover:bg-paper/5 transition-colors">
+                  <td className="py-6">{b.name}<br/><span className="opacity-40">{b.email}</span></td>
+                  <td className="py-6">{b.packageTitle}</td>
+                  <td className="py-6">
+                    <span className={`px-3 py-1 border-2 ${b.status === 'Paid' ? 'border-brand-yellow text-brand-yellow' : 'border-brand-red text-brand-red'}`}>
+                      {b.status}
+                    </span>
+                  </td>
+                  <td className="py-6 text-right font-display text-xl text-brand-yellow">₹{b.totalAmount?.toLocaleString()}</td>
                 </tr>
-              </thead>
-              <tbody>
-                {recentBookings.map((b) => (
-                  <tr key={b.id} className="border-b border-paper/5 last:border-0 hover:bg-paper/5 transition-colors">
-                    <td className="px-6 py-4">
-                      <p className="text-paper font-bold uppercase">{b.name}</p>
-                      <p className="text-paper/40 text-xs mt-1">{b.email}</p>
-                    </td>
-                    <td className="px-6 py-4 hidden md:table-cell">
-                      <p className="text-paper/70 truncate max-w-[200px] uppercase">{b.packageTitle || b.packageId}</p>
-                    </td>
-                    <td className="px-6 py-4 hidden lg:table-cell text-paper/60">
-                      ₹{b.totalAmount?.toLocaleString('en-IN') || '—'}
-                    </td>
-                    <td className="px-6 py-4">
-                      <span className={`px-3 py-1 text-[10px] uppercase font-bold tracking-wider ${
-                        b.status === 'Paid'
-                          ? 'bg-brand-yellow text-void brutal-border'
-                          : b.status === 'Cancelled'
-                          ? 'bg-brand-red text-void brutal-border'
-                          : 'bg-paper text-void brutal-border'
-                      }`}>
-                        {b.status}
-                      </span>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   );
 };
-
-export default Dashboard;
