@@ -4,7 +4,7 @@
 import React, { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'react-toastify';
-import { Phone, Mail, MapPin, Instagram, Facebook, Twitter, Save, AlertCircle, Loader2 } from 'lucide-react';
+import { Phone, Mail, MapPin, Instagram, Facebook, Twitter, Save, AlertCircle, Loader2, X } from 'lucide-react';
 import { getSettings, updateSettings, type SiteSettings } from '../firebase/firestoreService';
 import { DataLabel } from '../components/SharedBrutal';
 
@@ -173,7 +173,7 @@ const AdminSettings: React.FC = () => {
           {saving ? (
             <span className="flex items-center gap-4 uppercase font-mono">
               <span className="h-5 w-5 animate-spin rounded-full border-2 border-void border-t-transparent" />
-              UPDATING_PROTOCOLS...
+              SAVING SETTINGS...
             </span>
           ) : (
             <>

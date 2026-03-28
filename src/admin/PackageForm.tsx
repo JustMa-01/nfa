@@ -10,7 +10,7 @@ import {
   Plus, Trash2, Upload, X, Image, AlertCircle, ArrowLeft, Save, Loader2
 } from 'lucide-react';
 import {
-  getPackageById, addPackage, updatePackage, type Package
+  getPackageById, addPackage, updatePackage, getSettings, type Package
 } from '../firebase/firestoreService';
 import { uploadImages } from '../firebase/storageService';
 import { DataLabel } from '../components/SharedBrutal';
@@ -22,9 +22,14 @@ interface PackageFormData {
   duration: string;
   category: string;
   featured: boolean;
+  locationsStart: string;
+  locationsEnd: string;
+  allowFullPayment: boolean;
+  allowAdvancePayment: boolean;
+  advanceAmount: number;
+  allowRequestBooking: boolean;
 }
 
-const CATEGORIES = ['Beach', 'Mountain', 'Cultural', 'Adventure', 'Wildlife', 'City', 'Pilgrimage'];
 
 const PackageForm: React.FC = () => {
   const { id } = useParams<{ id?: string }>();
@@ -32,6 +37,12 @@ const PackageForm: React.FC = () => {
   const navigate = useNavigate();
 
   const [itinerary, setItinerary] = useState<string[]>(['']);
+  const [highlights, setHighlights] = useState<string[]>(['']);
+  const [included, setIncluded] = useState<string[]>(['']);
+  const [notIncluded, setNotIncluded] = useState<string[]>(['']);
+  const [optionalActivities, setOptionalActivities] = useState<string[]>(['']);
+  const [availableDates, setAvailableDates] = useState<{ startDate: string; endDate: string }[]>([]);
+
   const [existingImages, setExistingImages] = useState<string[]>([]);
   const [newImageFiles, setNewImageFiles] = useState<File[]>([]);
   const [imagePreviews, setImagePreviews] = useState<string[]>([]);
@@ -41,8 +52,32 @@ const PackageForm: React.FC = () => {
   const [submitting, setSubmitting] = useState(false);
 
   const {
-    register, handleSubmit, reset, formState: { errors }
-  } = useForm<PackageFormData>();
+    register, handleSubmit, reset, watch, formState: { errors }
+  } = useForm<PackageFormData>({
+    defaultValues: {
+      allowFullPayment: true,
+      allowAdvancePayment: false,
+      allowRequestBooking: false,
+      advanceAmount: 0,
+    }
+  });
+
+  const allowAdvancePayment = watch('allowAdvancePayment');
+
+  const [availableCategories, setAvailableCategories] = useState<string[]>([]);
+
+  // Load categories
+  useEffect(() => {
+    const loadCategories = async () => {
+      try {
+        const settings = await getSettings();
+        setAvailableCategories(settings.categories || []);
+      } catch (err) {
+        console.error('Failed to load categories', err);
+      }
+    };
+    loadCategories();
+  }, []);
 
   // Load existing package for edit mode
   useEffect(() => {
@@ -58,8 +93,19 @@ const PackageForm: React.FC = () => {
           duration: pkg.duration || '',
           category: pkg.category || '',
           featured: pkg.featured || false,
+          locationsStart: pkg.locations?.start || '',
+          locationsEnd: pkg.locations?.end || '',
+          allowFullPayment: pkg.allowFullPayment ?? true,
+          allowAdvancePayment: pkg.allowAdvancePayment ?? false,
+          advanceAmount: pkg.advanceAmount || 0,
+          allowRequestBooking: pkg.allowRequestBooking ?? false,
         });
         setItinerary(pkg.itinerary?.length ? pkg.itinerary : ['']);
+        setHighlights(pkg.highlights?.length ? pkg.highlights : ['']);
+        setIncluded(pkg.included?.length ? pkg.included : ['']);
+        setNotIncluded(pkg.notIncluded?.length ? pkg.notIncluded : ['']);
+        setOptionalActivities(pkg.optionalActivities?.length ? pkg.optionalActivities : ['']);
+        setAvailableDates(pkg.availableDates || []);
         setExistingImages(pkg.images || []);
       } catch {
         toast.error('FAILED_TO_LOAD_PACKAGE');
@@ -99,12 +145,16 @@ const PackageForm: React.FC = () => {
     setImagePreviews((prev) => prev.filter((_, i) => i !== idx));
   };
 
-  // ── Itinerary handling ───────────────────────────────────
-  const updateDay = (idx: number, val: string) => {
-    setItinerary((prev) => prev.map((d, i) => (i === idx ? val : d)));
+  // ── Dynamic Lists handling ───────────────────────────────────
+  const updateList = (setter: React.Dispatch<React.SetStateAction<string[]>>, idx: number, val: string) => {
+    setter((prev) => prev.map((item, i) => (i === idx ? val : item)));
   };
-  const addDay = () => setItinerary((prev) => [...prev, '']);
-  const removeDay = (idx: number) => setItinerary((prev) => prev.filter((_, i) => i !== idx));
+  const addToList = (setter: React.Dispatch<React.SetStateAction<string[]>>) => {
+    setter((prev) => [...prev, '']);
+  };
+  const removeFromList = (setter: React.Dispatch<React.SetStateAction<string[]>>, idx: number) => {
+    setter((prev) => prev.filter((_, i) => i !== idx));
+  };
 
   // ── Submit ───────────────────────────────────────────────
   const onSubmit = async (data: PackageFormData) => {
@@ -114,6 +164,11 @@ const PackageForm: React.FC = () => {
       toast.error('MISSING_ITINERARY_DATA');
       return;
     }
+
+    const validHighlights = highlights.filter((h) => h.trim().length > 0);
+    const validIncluded = included.filter((i) => i.trim().length > 0);
+    const validNotIncluded = notIncluded.filter((n) => n.trim().length > 0);
+    const validOptionalActivities = optionalActivities.filter((o) => o.trim().length > 0);
 
     setSubmitting(true);
     try {
@@ -135,8 +190,18 @@ const PackageForm: React.FC = () => {
         duration: data.duration.trim(),
         category: data.category,
         featured: data.featured,
+        locations: { start: data.locationsStart, end: data.locationsEnd },
+        highlights: validHighlights,
+        included: validIncluded,
+        notIncluded: validNotIncluded,
+        optionalActivities: validOptionalActivities,
         itinerary: validItinerary,
+        availableDates: availableDates.filter((d) => d.startDate && d.endDate),
         images: allImageUrls,
+        allowFullPayment: data.allowFullPayment,
+        allowAdvancePayment: data.allowAdvancePayment,
+        advanceAmount: Number(data.advanceAmount) || 0,
+        allowRequestBooking: data.allowRequestBooking,
       };
 
       if (isEdit && id) {
@@ -155,6 +220,96 @@ const PackageForm: React.FC = () => {
       setUploading(false);
     }
   };
+
+  const renderDynamicList = (title: string, state: string[], setter: React.Dispatch<React.SetStateAction<string[]>>, placeholder: string) => (
+    <div className="bg-paper/5 brutal-border brutal-shadow p-6 md:p-8 space-y-6 mt-8">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b-2 border-paper/10 pb-4 mb-6">
+        <h2 className="text-brand-yellow font-display text-2xl uppercase">{title}</h2>
+        <button type="button" onClick={() => addToList(setter)} className="btn-brutal py-2 px-4 text-xs font-mono">
+          [+] ADD ITEM
+        </button>
+      </div>
+      <div className="space-y-4">
+        {state.map((item, i) => (
+          <div key={i} className="flex gap-4 items-start bg-void p-4 brutal-border">
+            <div className="flex-shrink-0 w-10 h-10 bg-brand-yellow brutal-border flex items-center justify-center -rotate-3">
+              <span className="text-void font-display text-xl">{i + 1}</span>
+            </div>
+            <textarea
+              value={item}
+              onChange={(e) => updateList(setter, i, e.target.value)}
+              placeholder={`${placeholder}_${i + 1}...`}
+              rows={2}
+              className="flex-1 bg-transparent text-paper font-mono text-sm outline-none resize-none placeholder:text-paper/20 uppercase"
+            />
+            {state.length > 1 && (
+              <button
+                type="button"
+                onClick={() => removeFromList(setter, i)}
+                className="flex-shrink-0 p-2 brutal-border text-brand-red hover:bg-brand-red hover:text-paper transition-colors"
+              >
+                <Trash2 className="w-5 h-5" />
+              </button>
+            )}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+
+  const renderDatesList = () => (
+    <div className="bg-paper/5 brutal-border brutal-shadow p-6 md:p-8 space-y-6 mt-8">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b-2 border-paper/10 pb-4 mb-6">
+        <h2 className="text-brand-yellow font-display text-2xl uppercase">AVAILABLE DEPARTURES</h2>
+        <button type="button" onClick={() => setAvailableDates((p) => [...p, { startDate: '', endDate: '' }])} className="btn-brutal py-2 px-4 text-xs font-mono">
+          [+] ADD DEPARTURE
+        </button>
+      </div>
+      <div className="space-y-4">
+        {availableDates.map((item, i) => (
+          <div key={i} className="flex flex-wrap sm:flex-nowrap gap-4 items-center bg-void p-4 brutal-border">
+            <div className="flex-shrink-0 w-8 h-8 bg-brand-yellow brutal-border flex items-center justify-center -rotate-3">
+              <span className="text-void font-display text-lg">{i + 1}</span>
+            </div>
+            
+            <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="flex flex-col gap-1">
+                <span className="text-paper/50 text-[10px] font-mono tracking-widest uppercase">START DATE</span>
+                <input
+                  type="date"
+                  value={item.startDate}
+                  onChange={(e) => setAvailableDates((p) => p.map((d, idx) => (idx === i ? { ...d, startDate: e.target.value } : d)))}
+                  className="w-full bg-transparent text-paper font-mono text-sm outline-none brutal-border p-2 focus:border-brand-yellow transition-colors cursor-pointer"
+                />
+              </div>
+              <div className="flex flex-col gap-1">
+                <span className="text-paper/50 text-[10px] font-mono tracking-widest uppercase">END DATE</span>
+                <input
+                  type="date"
+                  value={item.endDate}
+                  onChange={(e) => setAvailableDates((p) => p.map((d, idx) => (idx === i ? { ...d, endDate: e.target.value } : d)))}
+                  className="w-full bg-transparent text-paper font-mono text-sm outline-none brutal-border p-2 focus:border-brand-yellow transition-colors cursor-pointer"
+                />
+              </div>
+            </div>
+            
+            <button
+              type="button"
+              onClick={() => setAvailableDates((p) => p.filter((_, idx) => idx !== i))}
+              className="flex-shrink-0 p-2 brutal-border text-brand-red hover:bg-brand-red hover:text-paper transition-colors mt-2 sm:mt-0"
+            >
+              <Trash2 className="w-5 h-5" />
+            </button>
+          </div>
+        ))}
+        {availableDates.length === 0 && (
+          <div className="p-4 bg-void brutal-border border-dashed opacity-50">
+            <p className="text-paper font-mono text-xs uppercase tracking-widest">NO FIXED DEPARTURES. USERS CAN SELECT ANY DATES DURING BOOKING.</p>
+          </div>
+        )}
+      </div>
+    </div>
+  );
 
   if (loadingPackage) {
     return (
@@ -187,7 +342,7 @@ const PackageForm: React.FC = () => {
             {/* Basic info */}
             <div className="bg-paper/5 brutal-border brutal-shadow p-6 md:p-8 space-y-6">
               <div className="border-b-2 border-paper/10 pb-4 mb-6">
-                <h2 className="text-brand-red font-display text-2xl uppercase">CORE_PARAMETERS</h2>
+                <h2 className="text-brand-red font-display text-2xl uppercase">BASIC DETAILS</h2>
               </div>
 
               {/* Title */}
@@ -228,7 +383,7 @@ const PackageForm: React.FC = () => {
               {/* Price + Duration row */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                 <div className="flex flex-col gap-2">
-                  <DataLabel>VALUE_EXCHANGE (₹) *</DataLabel>
+                  <DataLabel>PRICE (₹) *</DataLabel>
                   <input
                     {...register('price', {
                       required: 'Price is required',
@@ -249,7 +404,7 @@ const PackageForm: React.FC = () => {
                 </div>
 
                 <div className="flex flex-col gap-2">
-                  <DataLabel>TIMEFRAME</DataLabel>
+                  <DataLabel>DURATION</DataLabel>
                   <input
                     {...register('duration')}
                     placeholder="5_DAYS_4_NIGHTS"
@@ -258,16 +413,36 @@ const PackageForm: React.FC = () => {
                 </div>
               </div>
 
+              {/* Locations row */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-6">
+                <div className="flex flex-col gap-2">
+                  <DataLabel>START_LOCATION</DataLabel>
+                  <input
+                    {...register('locationsStart')}
+                    placeholder="e.g. VENICE"
+                    className="w-full bg-void text-paper font-mono p-4 text-lg brutal-border focus:border-brand-yellow outline-none transition-colors uppercase"
+                  />
+                </div>
+                <div className="flex flex-col gap-2">
+                  <DataLabel>END_LOCATION</DataLabel>
+                  <input
+                    {...register('locationsEnd')}
+                    placeholder="e.g. SPLIT"
+                    className="w-full bg-void text-paper font-mono p-4 text-lg brutal-border focus:border-brand-yellow outline-none transition-colors uppercase"
+                  />
+                </div>
+              </div>
+
               {/* Category + Featured row */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                 <div className="flex flex-col gap-2">
-                  <DataLabel>CLASSIFICATION</DataLabel>
+                  <DataLabel>CATEGORY</DataLabel>
                   <select
                     {...register('category')}
                     className="w-full bg-void text-paper font-mono p-4 text-lg brutal-border focus:border-brand-yellow outline-none transition-colors uppercase cursor-pointer"
                   >
                     <option value="">SELECT_CATEGORY</option>
-                    {CATEGORIES.map((c) => <option key={c} value={c}>{c}</option>)}
+                    {availableCategories.map((c) => <option key={c} value={c}>{c}</option>)}
                   </select>
                 </div>
 
@@ -287,52 +462,74 @@ const PackageForm: React.FC = () => {
               </div>
             </div>
 
-            {/* Itinerary */}
+            {/* PAYMENT CONFIGURATION */}
             <div className="bg-paper/5 brutal-border brutal-shadow p-6 md:p-8 space-y-6">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b-2 border-paper/10 pb-4 mb-6">
-                <h2 className="text-brand-yellow font-display text-2xl uppercase">SEQUENCE_OF_EVENTS</h2>
-                <button
-                  type="button"
-                  onClick={addDay}
-                  className="btn-brutal py-2 px-4 text-xs font-mono"
-                >
-                  [+] APPEND_DAY
-                </button>
+              <div className="border-b-2 border-paper/10 pb-4 mb-6">
+                <h2 className="text-brand-yellow font-display text-2xl uppercase">PAYMENT OPTIONS</h2>
               </div>
 
-              <div className="space-y-4">
-                {itinerary.map((day, i) => (
-                  <div key={i} className="flex gap-4 items-start bg-void p-4 brutal-border">
-                    <div className="flex-shrink-0 w-10 h-10 bg-brand-yellow brutal-border flex items-center justify-center -rotate-3">
-                      <span className="text-void font-display text-xl">{i + 1}</span>
-                    </div>
-                    <textarea
-                      value={day}
-                      onChange={(e) => updateDay(i, e.target.value)}
-                      placeholder={`DAY_${i + 1}_LOG_ENTRY...`}
-                      rows={2}
-                      className="flex-1 bg-transparent text-paper font-mono text-sm outline-none resize-none placeholder:text-paper/20 uppercase"
-                    />
-                    {itinerary.length > 1 && (
-                      <button
-                        type="button"
-                        onClick={() => removeDay(i)}
-                        className="flex-shrink-0 p-2 brutal-border text-brand-red hover:bg-brand-red hover:text-paper transition-colors"
-                      >
-                        <Trash2 className="w-5 h-5" />
-                      </button>
-                    )}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+                {/* Full Payment Toggle */}
+                <label className="flex items-center gap-4 cursor-pointer group">
+                  <div className="relative flex items-center justify-center w-6 h-6 brutal-border bg-void group-hover:border-brand-yellow transition-colors">
+                    <input type="checkbox" {...register('allowFullPayment')} className="peer appearance-none w-full h-full cursor-pointer" />
+                    <div className="absolute inset-1 bg-brand-yellow scale-0 peer-checked:scale-100 transition-transform" />
                   </div>
-                ))}
+                  <span className="font-mono text-paper text-sm uppercase group-hover:text-brand-yellow transition-colors">FULL_PAYMENT</span>
+                </label>
+
+                {/* Advance Booking Toggle */}
+                <label className="flex items-center gap-4 cursor-pointer group">
+                  <div className="relative flex items-center justify-center w-6 h-6 brutal-border bg-void group-hover:border-brand-yellow transition-colors">
+                    <input type="checkbox" {...register('allowAdvancePayment')} className="peer appearance-none w-full h-full cursor-pointer" />
+                    <div className="absolute inset-1 bg-brand-yellow scale-0 peer-checked:scale-100 transition-transform" />
+                  </div>
+                  <span className="font-mono text-paper text-sm uppercase group-hover:text-brand-yellow transition-colors">ADVANCE_PAYMENT</span>
+                </label>
+                
+                {/* Request Booking Toggle */}
+                <label className="flex items-center gap-4 cursor-pointer group">
+                  <div className="relative flex items-center justify-center w-6 h-6 brutal-border bg-void group-hover:border-brand-yellow transition-colors">
+                    <input type="checkbox" {...register('allowRequestBooking')} className="peer appearance-none w-full h-full cursor-pointer" />
+                    <div className="absolute inset-1 bg-brand-yellow scale-0 peer-checked:scale-100 transition-transform" />
+                  </div>
+                  <span className="font-mono text-paper text-sm uppercase group-hover:text-brand-yellow transition-colors">REQUEST_BOOKING</span>
+                </label>
               </div>
+
+              {allowAdvancePayment && (
+                <div className="flex flex-col gap-2 mt-6 pt-6 border-t border-paper/10">
+                  <DataLabel>ADVANCE AMOUNT (₹) PER PERSON *</DataLabel>
+                  <input
+                    {...register('advanceAmount', { valueAsNumber: true, min: { value: 0, message: 'Must be positive' } })}
+                    type="number"
+                    min={0}
+                    placeholder="e.g. 5000"
+                    className="w-full bg-void text-paper font-mono p-4 text-lg brutal-border focus:border-brand-yellow outline-none transition-colors max-w-sm"
+                  />
+                  {errors.advanceAmount && (
+                    <p className="flex items-center gap-2 font-mono text-brand-red text-xs uppercase mt-2">
+                      <AlertCircle className="w-4 h-4" /> {errors.advanceAmount.message}
+                    </p>
+                  )}
+                </div>
+              )}
             </div>
+
+            {/* Dynamic Lists */}
+            {renderDatesList()}
+            {renderDynamicList('ITINERARY', itinerary, setItinerary, 'DAY_LOG')}
+            {renderDynamicList('TRIP_HIGHLIGHTS', highlights, setHighlights, 'HIGHLIGHT')}
+            {renderDynamicList('WHAT_IS_INCLUDED', included, setIncluded, 'INCLUSION')}
+            {renderDynamicList('WHAT_IS_NOT_INCLUDED', notIncluded, setNotIncluded, 'EXCLUSION')}
+            {renderDynamicList('OPTIONAL_ACTIVITIES', optionalActivities, setOptionalActivities, 'ACTIVITY')}
           </div>
 
           {/* ── Right: Images ──────────────────────── */}
           <div className="space-y-8">
             <div className="bg-paper/5 brutal-border brutal-shadow p-6 md:p-8 space-y-6">
               <div className="border-b-2 border-paper/10 pb-4 mb-6">
-                <h2 className="text-paper font-display text-2xl uppercase">VISUAL_ASSETS</h2>
+                <h2 className="text-paper font-display text-2xl uppercase">IMAGES</h2>
                 <DataLabel className="mt-2 text-paper/50">MAX_8_FILES :: PRIMARY=0</DataLabel>
               </div>
 
@@ -373,11 +570,11 @@ const PackageForm: React.FC = () => {
               {/* Existing images */}
               {existingImages.length > 0 && (
                 <div>
-                  <DataLabel className="mb-3">STORED_ASSETS [{existingImages.length}]</DataLabel>
+                  <DataLabel className="mb-3">CURRENT IMAGES [{existingImages.length}]</DataLabel>
                   <div className="grid grid-cols-2 gap-3">
                     {existingImages.map((url) => (
                       <div key={url} className="relative group/img aspect-square brutal-border overflow-hidden bg-void">
-                        <img src={url} alt="" className="w-full h-full object-cover grayscale group-hover/img:grayscale-0 transition-all" />
+                        <img src={url} alt="" loading="lazy" decoding="async" className="w-full h-full object-cover grayscale group-hover/img:grayscale-0 transition-all" />
                         <button
                           type="button"
                           onClick={() => removeExistingImage(url)}
@@ -394,11 +591,11 @@ const PackageForm: React.FC = () => {
               {/* New image previews */}
               {imagePreviews.length > 0 && (
                 <div>
-                  <DataLabel className="mb-3">PENDING_ASSETS [{imagePreviews.length}]</DataLabel>
+                  <DataLabel className="mb-3">NEW IMAGES [{imagePreviews.length}]</DataLabel>
                   <div className="grid grid-cols-2 gap-3">
                     {imagePreviews.map((src, i) => (
                       <div key={i} className="relative group/img aspect-square brutal-border overflow-hidden bg-void">
-                        <img src={src} alt="" className="w-full h-full object-cover grayscale group-hover/img:grayscale-0 transition-all" />
+                        <img src={src} alt="" loading="lazy" decoding="async" className="w-full h-full object-cover grayscale group-hover/img:grayscale-0 transition-all" />
                         <button
                           type="button"
                           onClick={() => removeNewImage(i)}
@@ -429,12 +626,12 @@ const PackageForm: React.FC = () => {
               {submitting ? (
                 <span className="flex items-center gap-4 uppercase font-mono tracking-widest text-sm">
                   <span className="h-5 w-5 animate-spin rounded-full border-2 border-void border-t-transparent" />
-                  {uploading ? 'TRANSMITTING...' : 'COMMITTING_RECORD...'}
+                  {uploading ? 'UPLOADING...' : 'SAVING...'}
                 </span>
               ) : (
                 <>
-                  <Save className="w-6 h-6" />
-                  {isEdit ? 'UPDATE_RECORD' : 'COMMIT_NEW_RECORD'}
+                  <Save size={20} />
+                  {isEdit ? 'UPDATE PACKAGE' : 'SAVE NEW PACKAGE'}
                 </>
               )}
             </button>

@@ -40,9 +40,9 @@ const AdminLogin: React.FC = () => {
       <div className="w-full max-w-md">
         {/* Logo */}
         <div className="text-center mb-10">
-          <DataLabel className="text-brand-red mb-4">SYSTEM_ACCESS</DataLabel>
+          <DataLabel className="text-brand-red mb-4">ADMIN ACCESS</DataLabel>
           <h1 className="text-6xl font-display leading-none mb-4 text-paper">RESTRICTED<br/>AREA</h1>
-          <p className="font-mono text-sm uppercase opacity-50 tracking-widest text-brand-yellow"><span className="text-brand-red">▲</span> AUTHORIZED_PERSONNEL_ONLY</p>
+          <p className="font-mono text-sm uppercase opacity-50 tracking-widest text-brand-yellow"><span className="text-brand-red">▲</span> AUTHORIZED PERSONNEL ONLY</p>
         </div>
 
         <div className="bg-paper/5 p-8 md:p-10 brutal-border brutal-shadow">
@@ -51,7 +51,7 @@ const AdminLogin: React.FC = () => {
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-6" noValidate>
             {/* Email */}
             <div>
-              <label className="block font-mono text-xs uppercase opacity-70 mb-2 mt-4 text-paper">NETWORK_IDENTIFIER</label>
+              <label className="block font-mono text-xs uppercase opacity-70 mb-2 mt-4 text-paper">EMAIL ADDRESS</label>
               <div className="relative">
                 <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-brand-yellow" />
                 <input
@@ -75,7 +75,7 @@ const AdminLogin: React.FC = () => {
 
             {/* Password */}
             <div>
-              <label className="block font-mono text-xs uppercase opacity-70 mb-2 mt-4 text-paper">SECURITY_CLEARANCE_KEY</label>
+              <label className="block font-mono text-xs uppercase opacity-70 mb-2 mt-4 text-paper">PASSWORD</label>
               <div className="relative">
                 <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-brand-yellow" />
                 <input
@@ -104,7 +104,7 @@ const AdminLogin: React.FC = () => {
                   <LoaderSpinner />
                   PROCESSING...
                 </span>
-              ) : 'INITIALIZE_LOGIN_SEQUENCE'}
+              ) : 'LOG IN'}
             </button>
 
             {/* Quick Demo Creation Button */}
@@ -118,7 +118,7 @@ const AdminLogin: React.FC = () => {
                   toast.success('Demo admin created! You can now sign in.');
                 } catch (err: any) {
                   if (err.message.includes('email-already-in-use')) {
-                    toast.info('DEMO_ADMIN_EXISTS // PROCEED_TO_LOGIN');
+                    toast.info('DEMO ADMIN // PROCEED TO LOGIN');
                   } else {
                     toast.error(err.message);
                   }
@@ -128,7 +128,7 @@ const AdminLogin: React.FC = () => {
               }}
               className="w-full flex items-center justify-center gap-2 bg-void hover:bg-paper/10 brutal-border text-paper font-mono uppercase tracking-widest text-xs py-4 transition-all duration-200 mt-6"
             >
-              GENERATE_DEMO_CREDENTIALS
+              CREATE DEMO ADMIN
             </button>
           </form>
         </div>

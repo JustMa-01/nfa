@@ -6,9 +6,8 @@ import { Search, SlidersHorizontal, X, Terminal } from 'lucide-react';
 import { BrutalNavbar, BrutalFooter, DataLabel } from '../components/SharedBrutal';
 import PackageCard from '../components/PackageCard';
 import { SkeletonGrid } from '../components/SkeletonCard';
-import { getPackages, type Package } from '../firebase/firestoreService';
+import { getPackages, getSettings, type Package } from '../firebase/firestoreService';
 
-const CATEGORIES = ['All', 'Beach', 'Mountain', 'Cultural', 'Adventure', 'Wildlife'];
 const SORT_OPTIONS = [
   { label: 'Newest First', value: 'newest' },
   { label: 'Price: Low to High', value: 'price_asc' },
@@ -22,14 +21,18 @@ const PackagesPage: React.FC = () => {
   const [category, setCategory] = useState('All');
   const [sort, setSort] = useState('newest');
   const [showFilters, setShowFilters] = useState(false);
+  const [availableCategories, setAvailableCategories] = useState<string[]>(['All']);
 
   useEffect(() => {
     const load = async () => {
       try {
-        const data = await getPackages();
+        const [data, settings] = await Promise.all([getPackages(), getSettings()]);
         setPackages(data);
+        if (settings.categories) {
+          setAvailableCategories(['All', ...settings.categories]);
+        }
       } catch (err) {
-        console.error('Error loading packages:', err);
+        console.error('Error loading data:', err);
       } finally {
         setLoading(false);
       }
@@ -111,7 +114,7 @@ const PackagesPage: React.FC = () => {
 
         {/* Category pills */}
         <div className={`flex flex-wrap gap-4 mt-6 ${showFilters ? 'flex' : 'hidden sm:flex'}`}>
-          {CATEGORIES.map((cat) => (
+          {availableCategories.map((cat) => (
             <button
               key={cat}
               onClick={() => setCategory(cat)}

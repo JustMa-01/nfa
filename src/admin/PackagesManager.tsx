@@ -82,11 +82,11 @@ const PackagesManager: React.FC = () => {
             <table className="w-full text-left border-collapse">
               <thead>
                 <tr className="border-b-2 border-paper/10 bg-void/50 font-mono text-xs uppercase tracking-widest text-paper/50">
-                  <th className="p-4 md:p-6 font-normal">MODULE_ID</th>
-                  <th className="p-4 md:p-6 font-normal hidden md:table-cell">CLASSIFICATION</th>
-                  <th className="p-4 md:p-6 font-normal hidden sm:table-cell">VALUE_EXCHANGE</th>
-                  <th className="p-4 md:p-6 font-normal hidden lg:table-cell">TIMEFRAME</th>
-                  <th className="p-4 md:p-6 font-normal text-right">OPERATIONS</th>
+                  <th className="p-4 md:p-6 font-normal">ID</th>
+                  <th className="p-4 md:p-6 font-normal hidden md:table-cell">CATEGORY</th>
+                  <th className="p-4 md:p-6 font-normal hidden sm:table-cell">PRICE</th>
+                  <th className="p-4 md:p-6 font-normal hidden lg:table-cell">DURATION</th>
+                  <th className="p-4 md:p-6 font-normal text-right">ACTIONS</th>
                 </tr>
               </thead>
               <tbody className="font-mono text-sm">
@@ -95,7 +95,7 @@ const PackagesManager: React.FC = () => {
                     <td className="p-4 md:p-6">
                       <div className="flex items-start gap-4">
                         {pkg.images?.[0] ? (
-                          <img src={pkg.images[0]} alt="" className="w-16 h-16 object-cover brutal-border grayscale group-hover:grayscale-0 transition-all flex-shrink-0" />
+                          <img src={pkg.images[0]} alt="" loading="lazy" decoding="async" className="w-16 h-16 object-cover brutal-border grayscale group-hover:grayscale-0 transition-all flex-shrink-0" />
                         ) : (
                           <div className="w-16 h-16 bg-void brutal-border flex items-center justify-center flex-shrink-0">
                             <Package className="w-6 h-6 text-paper/20" />

@@ -121,11 +121,11 @@ const BookingsManager: React.FC = () => {
                 <tr className="border-b-2 border-paper/10 bg-void/50 font-mono text-xs uppercase tracking-widest text-paper/50">
                   <th className="p-4 md:p-6 font-normal">CUSTOMER_DATA</th>
                   <th className="p-4 md:p-6 font-normal hidden md:table-cell">PACKAGE_REF</th>
-                  <th className="p-4 md:p-6 font-normal hidden sm:table-cell">TIMEFRAME</th>
+                  <th className="p-4 md:p-6 font-normal hidden sm:table-cell">DATES</th>
                   <th className="p-4 md:p-6 font-normal hidden lg:table-cell">MANIFEST</th>
-                  <th className="p-4 md:p-6 font-normal hidden lg:table-cell">REVENUE</th>
+                  <th className="p-4 md:p-6 font-normal hidden lg:table-cell">FINANCIALS</th>
                   <th className="p-4 md:p-6 font-normal">STATUS</th>
-                  <th className="p-4 md:p-6 font-normal text-right">OPERATIONS</th>
+                  <th className="p-4 md:p-6 font-normal text-right">ACTIONS</th>
                 </tr>
               </thead>
               <tbody className="font-mono text-sm">
@@ -142,15 +142,27 @@ const BookingsManager: React.FC = () => {
                       </p>
                     </td>
                     <td className="p-4 md:p-6 hidden sm:table-cell align-top">
-                      <span className="bg-void px-2 py-1 border-2 border-paper/10 text-brand-yellow">
-                        {b.travelDate}
+                      <span className="bg-void px-2 py-1 border-2 border-paper/10 text-brand-yellow whitespace-nowrap">
+                        {b.startDate} <span className="text-paper/40 mx-1">TO</span> {b.endDate}
                       </span>
                     </td>
                     <td className="p-4 md:p-6 hidden lg:table-cell align-top text-paper/70">
                       {b.travelers} PAX
                     </td>
                     <td className="p-4 md:p-6 hidden lg:table-cell align-top text-brand-red font-bold">
-                      ₹{b.totalAmount?.toLocaleString('en-IN') || '—'}
+                      <div className="flex flex-col">
+                        <span>₹{b.totalAmount?.toLocaleString('en-IN') || '—'}</span>
+                        {b.amountPaid !== undefined && (
+                          <span className="text-brand-yellow font-normal text-xs mt-2 uppercase tracking-widest">
+                            PAID: ₹{b.amountPaid.toLocaleString('en-IN')}
+                          </span>
+                        )}
+                        {b.paymentMode && (
+                          <span className="text-paper/40 font-normal text-[10px] uppercase tracking-widest mt-1">
+                            MODE: {b.paymentMode}
+                          </span>
+                        )}
+                      </div>
                     </td>
                     <td className="p-4 md:p-6 align-top">
                       <span className={`inline-block px-3 py-1 text-xs font-bold uppercase brutal-border ${statusStyle[b.status]}`}>

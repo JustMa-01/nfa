@@ -58,9 +58,9 @@ const Dashboard: React.FC = () => {
     <div className="space-y-10">
       {/* Header */}
       <div>
-        <DataLabel className="text-brand-yellow mb-2">DASHBOARD_OVERVIEW</DataLabel>
-        <h1 className="text-paper font-display text-5xl uppercase">COMMAND_CENTER.</h1>
-        <p className="font-mono text-paper/50 text-sm mt-4 uppercase">Welcome back — ALL SYSTEMS NOMINAL.</p>
+        <DataLabel className="text-brand-yellow mb-2">DASHBOARD OVERVIEW</DataLabel>
+        <h1 className="text-paper font-display text-5xl uppercase">DASHBOARD.</h1>
+        <p className="font-mono text-paper/50 text-sm mt-4 uppercase">Welcome back — Ready for new bookings.</p>
       </div>
 
       {/* Stats grid */}
@@ -74,28 +74,28 @@ const Dashboard: React.FC = () => {
         <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6">
           <StatCard
             icon={<Package className="w-6 h-6 text-void" />}
-            label="TOTAL_PACKAGES"
+            label="TOTAL PACKAGES"
             value={packageCount}
             sub="Active listings"
             colorClass="bg-brand-yellow"
           />
           <StatCard
             icon={<BookOpen className="w-6 h-6 text-paper" />}
-            label="TOTAL_BOOKINGS"
+            label="TOTAL BOOKINGS"
             value={bookings.length}
             sub={`${paidBookings.length} paid`}
             colorClass="bg-brand-red"
           />
           <StatCard
             icon={<DollarSign className="w-6 h-6 text-brand-yellow" />}
-            label="TOTAL_REVENUE"
+            label="TOTAL REVENUE"
             value={`₹${totalRevenue.toLocaleString('en-IN')}`}
             sub="From confirmed bookings"
             colorClass="bg-void text-brand-yellow border-brand-yellow"
           />
           <StatCard
             icon={<Clock className="w-6 h-6 text-void" />}
-            label="PENDING_BOOKINGS"
+            label="PENDING BOOKINGS"
             value={pendingBookings.length}
             sub="Awaiting payment"
             colorClass="bg-paper"
@@ -108,15 +108,15 @@ const Dashboard: React.FC = () => {
         <div className="flex items-center justify-between px-6 py-6 border-b-2 border-paper/10">
           <div className="flex items-center gap-4">
             <TrendingUp className="w-6 h-6 text-brand-red" />
-            <h2 className="text-paper font-display text-2xl uppercase">RECENT_BOOKINGS</h2>
+            <h2 className="text-paper font-display text-2xl uppercase">RECENT BOOKINGS</h2>
           </div>
           <Link to="/admin/bookings" className="text-brand-yellow font-mono text-sm uppercase hover:text-brand-red flex items-center gap-2 transition-colors">
-            VIEW_ALL <ArrowRight className="w-4 h-4" />
+            VIEW ALL <ArrowRight className="w-4 h-4" />
           </Link>
         </div>
 
         {recentBookings.length === 0 ? (
-          <div className="py-16 text-center text-paper/30 font-mono text-sm uppercase">NO_BOOKINGS_DETECTED.</div>
+          <div className="py-16 text-center text-paper/30 font-mono text-sm uppercase">NO BOOKINGS FOUND.</div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-left font-mono text-sm">

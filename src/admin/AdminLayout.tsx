@@ -5,7 +5,7 @@ import React, { useState } from 'react';
 import { Outlet, NavLink, useNavigate } from 'react-router-dom';
 import {
   Compass, LayoutDashboard, Package, BookOpen, Settings, LogOut,
-  Menu, X, ChevronRight,
+  Menu, X, ChevronRight, Tags
 } from 'lucide-react';
 import { toast } from 'react-toastify';
 import { signOut } from '../firebase/authService';
@@ -16,6 +16,7 @@ const NAV_ITEMS = [
   { to: '/admin/dashboard', icon: LayoutDashboard, label: 'DASHBOARD' },
   { to: '/admin/packages', icon: Package, label: 'PACKAGES' },
   { to: '/admin/bookings', icon: BookOpen, label: 'BOOKINGS' },
+  { to: '/admin/categories', icon: Tags, label: 'CATEGORIES' },
   { to: '/admin/settings', icon: Settings, label: 'SETTINGS' },
 ];
 

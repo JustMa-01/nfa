@@ -24,6 +24,7 @@ const Dashboard       = lazy(() => import('./admin/Dashboard'));
 const PackagesManager = lazy(() => import('./admin/PackagesManager'));
 const PackageForm     = lazy(() => import('./admin/PackageForm'));
 const BookingsManager = lazy(() => import('./admin/BookingsManager'));
+const CategoriesManager = lazy(() => import('./admin/CategoriesManager'));
 const AdminSettings   = lazy(() => import('./admin/AdminSettings'));
 
 const App: React.FC = () => {
@@ -52,6 +53,7 @@ const App: React.FC = () => {
                 <Route path="/admin/packages/add"         element={<PackageForm />} />
                 <Route path="/admin/packages/edit/:id"    element={<PackageForm />} />
                 <Route path="/admin/bookings"             element={<BookingsManager />} />
+                <Route path="/admin/categories"           element={<CategoriesManager />} />
                 <Route path="/admin/settings"             element={<AdminSettings />} />
               </Route>
             </Route>

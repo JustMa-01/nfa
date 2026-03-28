@@ -29,6 +29,21 @@ export interface Package {
   duration: string;      // e.g. "7 Days / 6 Nights"
   category: string;      // e.g. "Beach", "Mountain", "Cultural"
   featured: boolean;
+  locations?: { start: string; end: string };
+  highlights?: string[];
+  included?: string[];
+  notIncluded?: string[];
+  optionalActivities?: string[];
+  
+  // Payment Config
+  allowFullPayment?: boolean;
+  allowAdvancePayment?: boolean;
+  advanceAmount?: number;
+  allowRequestBooking?: boolean;
+  
+  // Available Departure Dates
+  availableDates?: { startDate: string; endDate: string }[];
+  
   createdAt?: unknown;
 }
 
@@ -38,11 +53,14 @@ export interface Booking {
   phone: string;
   email: string;
   travelers: number;
-  travelDate: string;
+  startDate: string;
+  endDate: string;
   packageId: string;
   packageTitle?: string;
   totalAmount: number;
   status: 'Pending' | 'Paid' | 'Cancelled';
+  paymentMode?: 'full' | 'advance' | 'request';
+  amountPaid?: number;
   razorpayPaymentId?: string;
   createdAt?: unknown;
 }
@@ -55,6 +73,7 @@ export interface SiteSettings {
   facebook?: string;
   instagram?: string;
   twitter?: string;
+  categories?: string[];
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -126,13 +145,18 @@ export const updateBookingStatus = async (
 
 export const getSettings = async (): Promise<SiteSettings> => {
   const snap = await getDoc(doc(db, 'settings', 'main'));
+  const defaultCategories = ['Beach', 'Mountain', 'Cultural', 'Adventure', 'Wildlife', 'City', 'Pilgrimage'];
   if (!snap.exists()) {
     // Return defaults if not set yet
-    return { phone: '', email: '', address: '' };
+    return { phone: '', email: '', address: '', categories: defaultCategories };
   }
-  return { id: snap.id, ...snap.data() } as SiteSettings;
+  const data = snap.data() as SiteSettings;
+  if (!data.categories) {
+    data.categories = defaultCategories;
+  }
+  return { id: snap.id, ...data };
 };
 
-export const updateSettings = async (data: Omit<SiteSettings, 'id'>): Promise<void> => {
+export const updateSettings = async (data: Partial<Omit<SiteSettings, 'id'>>): Promise<void> => {
   await updateDoc(doc(db, 'settings', 'main'), { ...data });
 };
